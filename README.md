@@ -14,11 +14,7 @@ Relevance Scoring: Scores each activity based on keywords and collaboration to m
 
 Strategic Focus Score: Compares your actual work against ideal role priorities to identify alignment or gaps.
 
-Topical Deep Dive:
 
-Summarize all email conversations related to a specific project or keyword.
-
-Optionally filter the topic summary to conversations with a specific person.
 
 User-Friendly Inputs:
 
@@ -41,90 +37,143 @@ Gmail Add-on Framework: Using CardService to build the native user interface ins
 
 Google Workspace APIs: GmailApp, CalendarApp, and DocumentApp for data retrieval and report generation.
 
-⚙️ Setup and Installation
-Follow these steps to deploy the add-on for your own Google account.
+1. Fuzzy Matching Implementation
+Three Types of Matching:
 
-1. Create the Apps Script Project
-Go to the Google Apps Script dashboard.
+Stem matching: Finds word roots (e.g., "innovat" matches "innovation", "innovative", "innovating")
+Exact matching: Word boundary matching (e.g., "mvp" as whole word, not within "improvement")
+Pattern matching: Phrase matching with flexibility (e.g., "cost savings" finds activities mentioning both "cost" and "savings")
 
-Click New project.
+Scoring Values:
 
-Give the project a name, for example, "Work Summary Generator".
+Stem matches: +10 points (more flexible, lower value)
+Exact matches: +15 points (precise terms)
+Pattern matches: +20 points (complex phrases)
 
-2. Add the Code
-You will need to populate two files in your project.
+2. Realistic Thresholds
+New Rating Scale:
 
-A. The Manifest File (appsscript.json)
+4.0 (Excellent): 70+ points (was 80+)
+3.0 (Good): 50-69 points (was 65-79)
+2.0 (Fair): 30-49 points (was 45-64)
+1.0 (Poor): 15-29 points (was 1-44)
+0.5 (Minimal): Under 15 points
 
-In the editor, click the Project Settings (⚙️) icon on the left.
+Base Score Increased: From 10 to 20 points, recognizing that all work activities have some value.
+3. Multi-Labeling System
+How it works:
 
-Check the box for "Show appsscript.json manifest file in editor".
+Each activity gets scored against ALL four categories
+Activities with scores ≥30 in multiple categories get assigned to multiple labels
+Example: "Led brainstorming session with 5 stakeholders to design new customer onboarding process"
 
-Return to the Editor (⛽) and click on the appsscript.json file.
-
-Delete all content in the file and paste the code from this file.
-
-B. The Script File (Code.gs)
-
-Click on the Code.gs file.
-
-Delete all content in the file and paste the code from this file.
-
-3. Save and Deploy
-Click the Save project (💾) icon.
-
-Click the Deploy button and select Test deployments.
-
-A dialog will open. Click Install, then Done.
-
-You will be prompted to grant permissions. Review and Allow them. This is necessary for the script to read your calendar/email and create a doc.
-
-🚀 How to Use
-Refresh Gmail: After installing the test deployment, do a full refresh of your Gmail tab (Ctrl+R or Cmd+R).
-
-Open the Add-on: Look for the Work Summary Generator icon in the right-hand sidebar and click it.
-
-Start: On the welcome screen, click Create New Report.
-
-Configure: Fill out the form:
-
-Full Name: Your name for the report title.
-
-Start/End Date: Use the calendar pickers to select the analysis period.
-
-Topical Deep Dive (Optional): Enter a project name or keyword to get a special summary. You can also add a person's email to filter that summary.
-
-Strategy Weights: Select a role preset (like "Manager") to automatically fill the weights, and adjust if needed.
-
-Generate: Click the Generate Report button.
-
-Done! A success card will appear with a button to open your newly generated Google Doc report.
-
-📄 Report Structure
-The generated Google Doc is professionally formatted with the following sections:
-
-Topical Deep Dive (if a topic was provided)
-
-Executive Summary
-
-Performance Metrics
-
-Activity Distribution
-
-Detailed Activities
-
-Work Patterns
-
-Executive Recommendations
-
-🔧 Customization
-You can easily customize the analysis logic by editing the CONFIG constant at the top of Code.gs. The most common customization is to change the KEYWORDS to better match your organization's terminology.
-
-📄 License
-This project is licensed under the MIT License. See the  file for details.
+Innovation: 75 points (brainstorming, design, new)
+Collaboration: 65 points (session with stakeholders)
+Leadership: 55 points (led the session)
+Gets labeled as all three categories
 
 
 
+Benefits:
+
+More accurate representation of complex work
+Higher total activity counts (but metrics adjust for this)
+Better recognition of integrated strategic work
+
+4. Outcome Tracking & Weighting
+Outcome Categories with Multipliers:
+
+Revenue (2.5x multiplier): Sales, deals, monetization, cost savings
+Customer Satisfaction (2.0x multiplier): NPS, retention, user experience
+Efficiency (1.8x multiplier): Process improvement, automation, speed
+Market Position (2.2x multiplier): Competitive advantage, growth, brand
+
+How Outcome Scoring Works:
+
+Base category score calculated normally (20-100 points)
+System scans for outcome keywords
+If outcome keywords found:
+
+Apply highest relevant multiplier to category score
+Add base outcome bonus (+25 points)
+Add multi-outcome bonus (+15 per additional outcome)
+
+
+Cap final score at 100
+
+Example:
+
+Activity: "Delivered new pricing model that increased customer retention by 15%"
+Base Execution score: 45 points
+Outcome detection: Revenue + Customer Satisfaction
+Final score: (45 × 2.5) + 25 + 15 = 152 → capped at 100
+Gets labeled as high-impact execution with strong business outcomes
+
+Expected Impact on Your Results
+With your previous scores:
+
+Innovation: 30.0 average → likely 45-60 (Fair to Good range)
+Execution: 33.6 average → likely 50-70 (Good range)
+Collaboration: 34.3 average → likely 55-75 (Good to Excellent range)
+Leadership: 25.7 average → likely 40-55 (Fair to Good range)
+
+The fuzzy matching should capture more workplace language, realistic thresholds should give better ratings, multi-labeling should show integrated work value, and outcome tracking should elevate business-impact activities to their proper recognition level.
+
+Report Structure
+1. Executive Summary
+
+Key achievements with business impact
+Overall strategic alignment score (out of 4.0)
+No activity counts or raw metrics
+
+2. Performance Metrics
+
+Clean ratings for Innovation, Execution, Collaboration, Leadership
+Impact scores and key contribution descriptions
+No email/meeting quantity metrics
+
+3. Project Contributions
+
+Groups related activities into meaningful projects/initiatives
+Shows how the person contributed (Led/Drove/Collaborated/Contributed)
+Leadership analysis with enhanced weighting for:
+
+Team coverage and support
+Organizational thinking perspective
+People development impact
 
 
 
+4. Strategic Recommendations
+
+Growth-focused recommendations
+Portfolio balance analysis
+Career development guidance
+
+Key Algorithmic Improvements
+Project Grouping Intelligence
+
+Automatically clusters related activities into coherent projects
+Uses keyword matching and thematic analysis
+Prioritizes high-impact initiatives
+
+Enhanced Leadership Detection
+
+2.5x multiplier for covering other people and organizational thinking
+1.8x multiplier for team leadership and mentoring
+Specifically looks for coverage signals ("stepped in", "filled in", "backup")
+Organizational perspective signals ("strategic", "company-wide", "long-term")
+
+Business Outcome Integration
+
+Customer Impact: NPS, retention, user experience improvements
+Business Impact: Revenue, growth, competitive advantage
+Operational Impact: Efficiency, process improvements, cost savings
+Projects with multiple outcomes get compound scoring
+
+Contribution Analysis
+
+Led: Shows decision-making and strategic direction
+Drove: Indicates initiative and delivery ownership
+Collaborated: Emphasizes partnership and teamwork
+Contributed: Recognizes valuable participation
