@@ -1,9 +1,62 @@
 // --- GLOBAL CONFIGURATION ---
 const CONFIG = {
-    KEYWORDS: { STRATEGIC_PLANNING: ['strategy', 'strategic', 'planning', 'roadmap', 'qbr', 'okr', 'goals', 'vision', 'budget', 'forecast', 'initiative'], LEADERSHIP_COMMS: ['1:1', 'one-on-one', 'team sync', 'all-hands', 'mentoring', 'coaching', 'feedback', 'review', 'hiring', 'headcount', 'development', 'update', 'internal comms'], OPERATIONAL_EXECUTION: ['support', 'ticket', 'bug', 'fix', 'deploy', 'release', 'ops', 'maintenance', 'troubleshoot', 'incident', 'report', 'standup', 'daily sync'], CLIENT_STAKEHOLDER: ['client:', 'customer:', 'partner:', 'q&a', 'demo', 'proposal', 'contract', 'negotiation', 'feedback from', 'follow-up with']},
-    SCORING: { BASE_SCORE: 10, KEYWORD_HIT_VALUE: 15, COLLABORATION_BONUS_MEETING: 20, COLLABORATION_BONUS_EMAIL: 10, EXTERNAL_COMM_BONUS: 15, MAX_SCORE: 100},
-    STYLE: { HEADER: {[DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 10, [DocumentApp.Attribute.ITALIC]: true}, TITLE: {[DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 24, [DocumentApp.Attribute.BOLD]: true}, H1: {[DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 16, [DocumentApp.Attribute.BOLD]: true, [DocumentApp.Attribute.FOREGROUND_COLOR]: '#00558C'}, H2: {[DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 12, [DocumentApp.Attribute.BOLD]: true}, TABLE_HEADER_CELL: {[DocumentApp.Attribute.BOLD]: true, [DocumentApp.Attribute.BACKGROUND_COLOR]: '#F3F3F3'}, GREEN_TEXT: {[DocumentApp.Attribute.FOREGROUND_COLOR]: '#38761D'}, ORANGE_TEXT: {[DocumentApp.Attribute.FOREGROUND_COLOR]: '#B45F06'}, RED_TEXT: {[DocumentApp.Attribute.FOREGROUND_COLOR]: '#990000'}},
-    ANALYSIS: { TOP_N_ACTIVITIES: 5, MAX_GMAIL_THREADS: 250, WORK_HOURS: {START: 8, END: 18}}
+  KEYWORDS: {
+    STRATEGIC_PLANNING: ['strategy', 'strategic', 'planning', 'roadmap', 'qbr', 'okr', 'goals', 'vision', 'budget', 'forecast', 'initiative'],
+    LEADERSHIP_COMMS: ['1:1', 'one-on-one', 'team sync', 'all-hands', 'mentoring', 'coaching', 'feedback', 'review', 'hiring', 'headcount', 'development', 'update', 'internal comms'],
+    OPERATIONAL_EXECUTION: ['support', 'ticket', 'bug', 'fix', 'deploy', 'release', 'ops', 'maintenance', 'troubleshoot', 'incident', 'report', 'standup', 'daily sync'],
+    CLIENT_STAKEHOLDER: ['client:', 'customer:', 'partner:', 'q&a', 'demo', 'proposal', 'contract', 'negotiation', 'feedback from', 'follow-up with']
+  },
+  SCORING: {
+    BASE_SCORE: 10,
+    KEYWORD_HIT_VALUE: 15,
+    COLLABORATION_BONUS_MEETING: 20,
+    COLLABORATION_BONUS_EMAIL: 10,
+    EXTERNAL_COMM_BONUS: 15,
+    MAX_SCORE: 100
+  },
+  STYLE: {
+    HEADER: {
+      [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri',
+      [DocumentApp.Attribute.FONT_SIZE]: 10,
+      [DocumentApp.Attribute.ITALIC]: true
+    },
+    TITLE: {
+      [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri',
+      [DocumentApp.Attribute.FONT_SIZE]: 24,
+      [DocumentApp.Attribute.BOLD]: true
+    },
+    H1: {
+      [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri',
+      [DocumentApp.Attribute.FONT_SIZE]: 16,
+      [DocumentApp.Attribute.BOLD]: true,
+      [DocumentApp.Attribute.FOREGROUND_COLOR]: '#00558C'
+    },
+    H2: {
+      [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri',
+      [DocumentApp.Attribute.FONT_SIZE]: 12,
+      [DocumentApp.Attribute.BOLD]: true
+    },
+    TABLE_HEADER_CELL: {
+      [DocumentApp.Attribute.BOLD]: true,
+      [DocumentApp.Attribute.BACKGROUND_COLOR]: '#F3F3F3'
+    },
+    GREEN_TEXT: { [DocumentApp.Attribute.FOREGROUND_COLOR]: '#38761D' },
+    ORANGE_TEXT: { [DocumentApp.Attribute.FOREGROUND_COLOR]: '#B45F06' },
+    RED_TEXT: { [DocumentApp.Attribute.FOREGROUND_COLOR]: '#990000' }
+  },
+  ANALYSIS: {
+    TOP_N_ACTIVITIES: 5,
+    MAX_GMAIL_THREADS: 250,
+    MAX_GMAIL_MESSAGES: 500,
+    WORK_HOURS: { START: 8, END: 18 },
+    MIN_DESCRIPTION_LENGTH: 10,
+    BATCH_SIZE: 50
+  },
+  LIMITS: {
+    MAX_DATE_RANGE_DAYS: 365,
+    MIN_NAME_LENGTH: 2,
+    MAX_TOPIC_LENGTH: 100
+  }
 };
 
 const ROLE_PRESETS = {
@@ -12,11 +65,60 @@ const ROLE_PRESETS = {
   "INDIVIDUAL_CONTRIBUTOR": "10,15,60,15"
 };
 
+// === UTILITY FUNCTIONS ===
+/**
+ * Validates email format
+ */
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+/**
+ * Validates date range
+ */
+function validateDateRange(startDate, endDate) {
+  const now = new Date();
+  const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+  
+  if (startDate >= endDate) {
+    throw new Error('Start date must be before end date');
+  }
+  if (endDate > now) {
+    throw new Error('End date cannot be in the future');
+  }
+  if (daysDiff > CONFIG.LIMITS.MAX_DATE_RANGE_DAYS) {
+    throw new Error(`Date range cannot exceed ${CONFIG.LIMITS.MAX_DATE_RANGE_DAYS} days`);
+  }
+}
+
+/**
+ * Sanitizes text input
+ */
+function sanitizeText(text) {
+  if (!text) return '';
+  return text.toString().trim().replace(/[<>\"']/g, '');
+}
+
+/**
+ * Safe string contains check
+ */
+function safeContains(text, searchTerm) {
+  if (!text || !searchTerm) return false;
+  return text.toLowerCase().includes(searchTerm.toLowerCase());
+}
+
+// === UI FUNCTIONS ===
 /**
  * The trigger function that builds the initial UI when the add-on is opened in Gmail.
  */
 function onGmailHomepage(e) {
-  return createWelcomeCard();
+  try {
+    return createWelcomeCard();
+  } catch (error) {
+    console.error('Error in onGmailHomepage:', error);
+    return createErrorCard('Failed to load add-on', error.message);
+  }
 }
 
 /**
@@ -42,135 +144,244 @@ function createWelcomeCard() {
  * Action function to navigate from the welcome screen to the main form.
  */
 function navigateToConfigurationCard() {
+  try {
     return CardService.newActionResponseBuilder()
-        .setNavigation(CardService.newNavigation().pushCard(createConfigurationCard()))
-        .build();
+      .setNavigation(CardService.newNavigation().pushCard(createConfigurationCard()))
+      .build();
+  } catch (error) {
+    console.error('Error navigating to configuration:', error);
+    return createErrorResponse('Navigation failed', error.message);
+  }
 }
 
 /**
  * Creates the main UI card with all the user-friendly input fields.
- * @param {Object} e The event object, used to repopulate fields.
  */
 function createConfigurationCard(e = {}) {
-  const formInputs = e.formInputs || {};
-  const selectedRole = formInputs.role_select ? formInputs.role_select[0] : '';
-  const weights = selectedRole ? ROLE_PRESETS[selectedRole] : (formInputs.weights ? formInputs.weights[0] : '');
+  try {
+    const formInputs = e.formInputs || {};
+    const selectedRole = formInputs.role_select ? formInputs.role_select[0] : '';
+    const weights = selectedRole ? ROLE_PRESETS[selectedRole] : (formInputs.weights ? formInputs.weights[0] : '');
+    const currentUserEmail = Session.getActiveUser().getEmail();
 
-  const card = CardService.newCardBuilder();
-  card.setHeader(CardService.newCardHeader().setTitle('Create New Report').setSubtitle('Step 1: Configure Your Report'));
+    const card = CardService.newCardBuilder();
+    card.setHeader(CardService.newCardHeader().setTitle('Create New Report').setSubtitle('Step 1: Configure Your Report'));
 
-  // --- Section 1: Who and When ---
-  const whoWhenSection = CardService.newCardSection().setHeader('Who & When');
-  
-  whoWhenSection.addWidget(CardService.newTextInput().setFieldName('fullName').setTitle("Person's Full Name"));
-  whoWhenSection.addWidget(CardService.newTextInput().setFieldName('userEmail').setTitle('Email to Analyze').setValue(Session.getActiveUser().getEmail()));
-  whoWhenSection.addWidget(CardService.newTextParagraph().setText("<i><b>Note:</b> For security, this script can only analyze the data of the person running it.</i>"));
-  whoWhenSection.addWidget(CardService.newDatePicker().setFieldName('startDate').setTitle('Start Date'));
-  whoWhenSection.addWidget(CardService.newDatePicker().setFieldName('endDate').setTitle('End Date'));
-  
-  card.addSection(whoWhenSection);
+    // --- Section 1: Who and When ---
+    const whoWhenSection = CardService.newCardSection().setHeader('Who & When');
+    
+    whoWhenSection.addWidget(
+      CardService.newTextInput()
+        .setFieldName('fullName')
+        .setTitle("Person's Full Name")
+        .setValue(formInputs.fullName ? formInputs.fullName[0] : '')
+    );
+    
+    whoWhenSection.addWidget(
+      CardService.newTextInput()
+        .setFieldName('userEmail')
+        .setTitle('Email to Analyze')
+        .setValue(formInputs.userEmail ? formInputs.userEmail[0] : currentUserEmail)
+    );
+    
+    whoWhenSection.addWidget(
+      CardService.newTextParagraph()
+        .setText("<i><b>Note:</b> For security, this script can only analyze the data of the person running it.</i>")
+    );
+    
+    whoWhenSection.addWidget(
+      CardService.newDatePicker()
+        .setFieldName('startDate')
+        .setTitle('Start Date')
+    );
+    
+    whoWhenSection.addWidget(
+      CardService.newDatePicker()
+        .setFieldName('endDate')
+        .setTitle('End Date')
+    );
+    
+    card.addSection(whoWhenSection);
 
-  // --- Section 2 for Topical Summary ---
-  const topicSection = CardService.newCardSection().setHeader('Topical Deep Dive (Optional)');
-  topicSection.addWidget(CardService.newTextInput()
-      .setFieldName('topic')
-      .setTitle('Summarize a topic')
-      .setHint("e.g., 'Project Phoenix' or 'Q4 Budget'"));
-      
-  topicSection.addWidget(CardService.newTextInput()
-      .setFieldName('personEmail')
-      .setTitle('Filter topic by person (Optional)')
-      .setHint("e.g., jane.doe@example.com"));
+    // --- Section 2 for Topical Summary ---
+    const topicSection = CardService.newCardSection().setHeader('Topical Deep Dive (Optional)');
+    
+    topicSection.addWidget(
+      CardService.newTextInput()
+        .setFieldName('topic')
+        .setTitle('Summarize a topic')
+        .setHint("e.g., 'Project Phoenix' or 'Q4 Budget'")
+        .setValue(formInputs.topic ? formInputs.topic[0] : '')
+    );
+        
+    topicSection.addWidget(
+      CardService.newTextInput()
+        .setFieldName('personEmail')
+        .setTitle('Filter topic by person (Optional)')
+        .setHint("e.g., jane.doe@example.com")
+        .setValue(formInputs.personEmail ? formInputs.personEmail[0] : '')
+    );
 
-  card.addSection(topicSection);
+    card.addSection(topicSection);
 
+    // --- Section 3: Strategy Weights ---
+    const weightsSection = CardService.newCardSection().setHeader('Define Role Focus (Strategy Weights)');
+    
+    weightsSection.addWidget(
+      CardService.newTextParagraph()
+        .setText("This tells the tool what's most important for the role. Think of it like a <b>budget for professional focus.</b> Start with a preset and adjust if needed.")
+    );
 
-  // --- Section 3: Strategy Weights ---
-  const weightsSection = CardService.newCardSection().setHeader('Define Role Focus (Strategy Weights)');
-  
-  weightsSection.addWidget(CardService.newTextParagraph()
-    .setText("This tells the tool what's most important for the role. Think of it like a <b>budget for professional focus.</b> Start with a preset and adjust if needed."));
+    const roleSelect = CardService.newSelectionInput()
+      .setFieldName('role_select')
+      .setTitle("Select a Role Profile (to auto-fill weights)")
+      .setType(CardService.SelectionInputType.DROPDOWN)
+      .addItem("Select a preset...", "", selectedRole === "")
+      .addItem("Executive / Director", "EXECUTIVE", selectedRole === "EXECUTIVE")
+      .addItem("Manager / Team Lead", "MANAGER", selectedRole === "MANAGER")
+      .addItem("Individual Contributor", "INDIVIDUAL_CONTRIBUTOR", selectedRole === "INDIVIDUAL_CONTRIBUTOR")
+      .setOnChangeAction(CardService.newAction().setFunctionName('handleRoleChange'));
+    
+    weightsSection.addWidget(roleSelect);
+    
+    weightsSection.addWidget(
+      CardService.newTextInput()
+        .setFieldName('weights')
+        .setTitle('Strategy Weights (Strategic, Leadership, Operational, Client)')
+        .setValue(weights)
+        .setHint('Must be 4 numbers separated by commas, totaling 100')
+    );
 
-  const roleSelect = CardService.newSelectionInput()
-    .setFieldName('role_select')
-    .setTitle("Select a Role Profile (to auto-fill weights)")
-    .setType(CardService.SelectionInputType.DROPDOWN)
-    .addItem("Select a preset...", "", selectedRole === "")
-    .addItem("Executive / Director", "EXECUTIVE", selectedRole === "EXECUTIVE")
-    .addItem("Manager / Team Lead", "MANAGER", selectedRole === "MANAGER")
-    .addItem("Individual Contributor", "INDIVIDUAL_CONTRIBUTOR", selectedRole === "INDIVIDUAL_CONTRIBUTOR")
-    .setOnChangeAction(CardService.newAction().setFunctionName('handleRoleChange'));
-  
-  weightsSection.addWidget(roleSelect);
-  
-  weightsSection.addWidget(CardService.newTextInput()
-    .setFieldName('weights')
-    .setTitle('Strategy Weights (Strategic, Leadership, Operational, Client)')
-    .setValue(weights)
-    .setHint('Must be 4 numbers separated by commas, totaling 100'));
+    card.addSection(weightsSection);
 
-  card.addSection(weightsSection);
+    // --- Section 4: Generate Button ---
+    card.setFixedFooter(
+      CardService.newFixedFooter().setPrimaryButton(
+        CardService.newTextButton()
+          .setText('Generate Report')
+          .setOnClickAction(CardService.newAction().setFunctionName('createReportAction'))
+          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      )
+    );
 
-  // --- Section 4: Generate Button ---
-  card.setFixedFooter(CardService.newFixedFooter().setPrimaryButton(
-      CardService.newTextButton()
-        .setText('Generate Report')
-        .setOnClickAction(CardService.newAction().setFunctionName('createReportAction'))
-        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)));
-
-  return card.build();
+    return card.build();
+  } catch (error) {
+    console.error('Error creating configuration card:', error);
+    return createErrorCard('Configuration Error', error.message);
+  }
 }
 
 /**
  * Action handler that re-renders the configuration card when a role preset is chosen.
  */
 function handleRoleChange(e) {
+  try {
     return CardService.newActionResponseBuilder()
-        .setNavigation(CardService.newNavigation().updateCard(createConfigurationCard(e)))
-        .build();
+      .setNavigation(CardService.newNavigation().updateCard(createConfigurationCard(e)))
+      .build();
+  } catch (error) {
+    console.error('Error handling role change:', error);
+    return createErrorResponse('Role Change Failed', error.message);
+  }
 }
 
 /**
  * The action handler function that is called when the "Generate Report" button is clicked.
  */
 function createReportAction(e) {
-  const formInputs = e.formInputs;
-  const userEmail = formInputs.userEmail[0];
-  const fullName = formInputs.fullName[0];
-  const startDateMs = formInputs.startDate ? formInputs.startDate[0].msSinceEpoch : null;
-  const endDateMs = formInputs.endDate ? formInputs.endDate[0].msSinceEpoch : null;
-  const weightsStr = formInputs.weights[0];
-  const topic = formInputs.topic ? formInputs.topic[0].trim() : null;
-  const personEmail = formInputs.personEmail ? formInputs.personEmail[0].trim() : null;
-
-  if (!fullName || !startDateMs || !endDateMs || !weightsStr) {
-    return CardService.newActionResponseBuilder().setNotification(CardService.newNotification().setText('Error: All fields in "Who & When" and "Strategy Weights" are required.')).build();
-  }
-  
-  const userInputs = {
-      userEmail: userEmail, fullName: fullName, startDate: new Date(startDateMs), endDate: new Date(endDateMs),
-      userDomain: userEmail.split('@')[1], weights: {}, topic: topic, personEmail: personEmail
-  };
-
-  const weightsArr = weightsStr.split(',').map(w => parseInt(w.trim(), 10));
-  if (weightsArr.length !== 4 || weightsArr.some(isNaN) || weightsArr.reduce((a, b) => a + b, 0) !== 100) {
-     return CardService.newActionResponseBuilder().setNotification(CardService.newNotification().setText('Error: Invalid weights. Must be 4 numbers that sum to 100.')).build();
-  }
-  userInputs.weights = { STRATEGIC_PLANNING: weightsArr[0], LEADERSHIP_COMMS: weightsArr[1], OPERATIONAL_EXECUTION: weightsArr[2], CLIENT_STAKEHOLDER: weightsArr[3] };
-  
   try {
+    const formInputs = e.formInputs;
+    
+    // Validate required fields
+    if (!formInputs.fullName || !formInputs.fullName[0]) {
+      return createErrorResponse('Validation Error', 'Full name is required');
+    }
+    if (!formInputs.startDate || !formInputs.endDate) {
+      return createErrorResponse('Validation Error', 'Both start and end dates are required');
+    }
+    if (!formInputs.weights || !formInputs.weights[0]) {
+      return createErrorResponse('Validation Error', 'Strategy weights are required');
+    }
+
+    const userEmail = sanitizeText(formInputs.userEmail[0]);
+    const fullName = sanitizeText(formInputs.fullName[0]);
+    const startDateMs = formInputs.startDate[0].msSinceEpoch;
+    const endDateMs = formInputs.endDate[0].msSinceEpoch;
+    const weightsStr = sanitizeText(formInputs.weights[0]);
+    const topic = formInputs.topic ? sanitizeText(formInputs.topic[0]) : null;
+    const personEmail = formInputs.personEmail ? sanitizeText(formInputs.personEmail[0]) : null;
+
+    // Validate inputs
+    if (fullName.length < CONFIG.LIMITS.MIN_NAME_LENGTH) {
+      return createErrorResponse('Validation Error', 'Name must be at least 2 characters');
+    }
+    
+    if (!isValidEmail(userEmail)) {
+      return createErrorResponse('Validation Error', 'Invalid email format');
+    }
+    
+    if (personEmail && !isValidEmail(personEmail)) {
+      return createErrorResponse('Validation Error', 'Invalid person email format');
+    }
+    
+    if (topic && topic.length > CONFIG.LIMITS.MAX_TOPIC_LENGTH) {
+      return createErrorResponse('Validation Error', `Topic must be less than ${CONFIG.LIMITS.MAX_TOPIC_LENGTH} characters`);
+    }
+
+    const startDate = new Date(startDateMs);
+    const endDate = new Date(endDateMs);
+    
+    validateDateRange(startDate, endDate);
+    
+    const userInputs = {
+      userEmail: userEmail,
+      fullName: fullName,
+      startDate: startDate,
+      endDate: endDate,
+      userDomain: userEmail.split('@')[1],
+      weights: {},
+      topic: topic,
+      personEmail: personEmail
+    };
+
+    // Parse and validate weights
+    const weightsArr = weightsStr.split(',').map(w => {
+      const parsed = parseInt(w.trim(), 10);
+      if (isNaN(parsed) || parsed < 0 || parsed > 100) {
+        throw new Error('Invalid weight value: ' + w.trim());
+      }
+      return parsed;
+    });
+    
+    if (weightsArr.length !== 4) {
+      return createErrorResponse('Validation Error', 'Must provide exactly 4 weight values');
+    }
+    
+    const weightSum = weightsArr.reduce((a, b) => a + b, 0);
+    if (weightSum !== 100) {
+      return createErrorResponse('Validation Error', `Weights must sum to 100, got ${weightSum}`);
+    }
+    
+    userInputs.weights = {
+      STRATEGIC_PLANNING: weightsArr[0],
+      LEADERSHIP_COMMS: weightsArr[1],
+      OPERATIONAL_EXECUTION: weightsArr[2],
+      CLIENT_STAKEHOLDER: weightsArr[3]
+    };
+
+    // Generate report
     const rawData = fetchData(userInputs.startDate, userInputs.endDate, userInputs.userEmail);
     const analysis = analyzeData(rawData, userInputs.weights, userInputs.userDomain, userInputs.topic, userInputs.personEmail);
     const docUrl = generateReport(analysis, userInputs);
 
     const successCard = createSuccessCard(docUrl, analysis.metrics);
-    return CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().pushCard(successCard)).build();
+    return CardService.newActionResponseBuilder()
+      .setNavigation(CardService.newNavigation().pushCard(successCard))
+      .build();
 
-  } catch (err) {
-     const errorCard = CardService.newCardBuilder()
-      .setHeader(CardService.newCardHeader().setTitle('An Error Occurred').setSubtitle('Please try again.'))
-      .addSection(CardService.newCardSection().addWidget(CardService.newTextParagraph().setText(err.message))).build();
-    return CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().pushCard(errorCard)).build();
+  } catch (error) {
+    console.error('Error in createReportAction:', error);
+    return createErrorResponse('Report Generation Failed', error.message);
   }
 }
 
@@ -178,67 +389,255 @@ function createReportAction(e) {
  * Creates the final success card with a link to the report.
  */
 function createSuccessCard(docUrl, metrics) {
-    return CardService.newCardBuilder()
-      .setHeader(CardService.newCardHeader().setTitle('Report Generation Complete!'))
-      .addSection(CardService.newCardSection()
-        .addWidget(CardService.newKeyValue().setTopLabel('Status').setContent('✅ Success').setIcon(CardService.Icon.CONFIRMATION))
-        .addWidget(CardService.newKeyValue().setTopLabel('Strategic Focus Score').setContent(`${metrics.weightedStrategicFocus.toFixed(1)}%`))
-        .addWidget(CardService.newKeyValue().setTopLabel('Activities Analyzed').setContent(metrics.totalActivities.toString()))
+  return CardService.newCardBuilder()
+    .setHeader(CardService.newCardHeader().setTitle('Report Generation Complete!'))
+    .addSection(CardService.newCardSection()
+      .addWidget(CardService.newKeyValue()
+        .setTopLabel('Status')
+        .setContent('✅ Success')
+        .setIcon(CardService.Icon.CONFIRMATION))
+      .addWidget(CardService.newKeyValue()
+        .setTopLabel('Strategic Focus Score')
+        .setContent(`${metrics.weightedStrategicFocus.toFixed(1)}%`))
+      .addWidget(CardService.newKeyValue()
+        .setTopLabel('Activities Analyzed')
+        .setContent(metrics.totalActivities.toString()))
+    )
+    .addSection(CardService.newCardSection()
+      .addWidget(CardService.newButtonSet()
+        .addButton(CardService.newTextButton()
+          .setText('Open Report')
+          .setOpenLink(CardService.newOpenLink().setUrl(docUrl))
+          .setTextButtonStyle(CardService.TextButtonStyle.FILLED))
+        .addButton(CardService.newTextButton()
+          .setText('Create Another')
+          .setOnClickAction(CardService.newAction().setFunctionName('handleCreateAnother')))
       )
-      .addSection(CardService.newCardSection()
-          .addWidget(CardService.newButtonSet()
-              .addButton(CardService.newTextButton().setText('Open Report').setOpenLink(CardService.newOpenLink().setUrl(docUrl)).setTextButtonStyle(CardService.TextButtonStyle.FILLED))
-              .addButton(CardService.newTextButton().setText('Create Another').setOnClickAction(CardService.newAction().setFunctionName('handleCreateAnother')))
-          )
-      ).build();
+    ).build();
 }
 
 /**
  * Action handler to go back to the welcome screen.
  */
 function handleCreateAnother() {
+  try {
     return CardService.newActionResponseBuilder()
-        .setNavigation(CardService.newNavigation().popToRoot())
-        .build();
+      .setNavigation(CardService.newNavigation().popToRoot())
+      .build();
+  } catch (error) {
+    console.error('Error in handleCreateAnother:', error);
+    return createErrorResponse('Navigation Error', error.message);
+  }
 }
 
+/**
+ * Creates an error card for display
+ */
+function createErrorCard(title, message) {
+  return CardService.newCardBuilder()
+    .setHeader(CardService.newCardHeader().setTitle(title).setSubtitle('Please try again'))
+    .addSection(CardService.newCardSection()
+      .addWidget(CardService.newTextParagraph().setText(message))
+      .addWidget(CardService.newButtonSet()
+        .addButton(CardService.newTextButton()
+          .setText('Try Again')
+          .setOnClickAction(CardService.newAction().setFunctionName('navigateToConfigurationCard')))
+      )
+    ).build();
+}
 
-// =================================================================================
-// == CORE LOGIC FUNCTIONS                                                      ==
-// =================================================================================
+/**
+ * Creates an error response for actions
+ */
+function createErrorResponse(title, message) {
+  return CardService.newActionResponseBuilder()
+    .setNotification(CardService.newNotification().setText(`${title}: ${message}`))
+    .build();
+}
 
+// === CORE LOGIC FUNCTIONS ===
+
+/**
+ * Fetches calendar and email data for the specified date range and user.
+ * Fixed the main bug: replaced non-existent isOwnedBy() method
+ */
 function fetchData(startDate, endDate, userEmail) {
-  if (userEmail !== Session.getActiveUser().getEmail()) {
-    throw new Error(`Security restriction: This script can only analyze the data for ${Session.getActiveUser().getEmail()}, the user running it.`);
+  const currentUserEmail = Session.getActiveUser().getEmail();
+  if (userEmail !== currentUserEmail) {
+    throw new Error(`Security restriction: This script can only analyze data for ${currentUserEmail}`);
   }
+
   let activities = [];
-  const events = CalendarApp.getDefaultCalendar().getEvents(startDate, endDate);
-  for (const event of events) {
-    const userStatus = event.getGuestByEmail(userEmail)?.getGuestStatus();
-    if (userStatus === CalendarApp.GuestStatus.YES || event.isOwnedBy(userEmail)) {
-      activities.push({type: 'Meeting', id: event.getId(), date: event.getStartTime(), title: event.getTitle(), description: event.getDescription(), attendees: event.getGuestList().map(g => g.getEmail())});
+  
+  try {
+    // Fetch calendar events - FIXED: removed isOwnedBy() call
+    const calendar = CalendarApp.getDefaultCalendar();
+    const events = calendar.getEvents(startDate, endDate);
+    
+    console.log(`Found ${events.length} calendar events`);
+    
+    for (const event of events) {
+      try {
+        const userGuest = event.getGuestByEmail(userEmail);
+        const userStatus = userGuest ? userGuest.getGuestStatus() : null;
+        
+        // Include event if user accepted OR if no guest status (meaning they're the owner)
+        if (userStatus === CalendarApp.GuestStatus.YES || userStatus === null) {
+          const attendeeEmails = [];
+          try {
+            const guestList = event.getGuestList();
+            for (const guest of guestList) {
+              const guestEmail = guest.getEmail();
+              if (guestEmail) {
+                attendeeEmails.push(guestEmail);
+              }
+            }
+          } catch (e) {
+            console.warn('Error getting guest list for event:', event.getTitle(), e);
+          }
+
+          activities.push({
+            type: 'Meeting',
+            id: event.getId(),
+            date: event.getStartTime(),
+            title: sanitizeText(event.getTitle()) || 'Untitled Event',
+            description: sanitizeText(event.getDescription()) || '',
+            attendees: attendeeEmails
+          });
+        }
+      } catch (e) {
+        console.warn('Error processing calendar event:', e);
+      }
     }
+    
+    // Fetch Gmail threads with better error handling
+    try {
+      const gmailQuery = `from:${userEmail} after:${formatDateForGmail(startDate)} before:${formatDateForGmail(endDate)}`;
+      console.log('Gmail query:', gmailQuery);
+      
+      const threads = GmailApp.search(gmailQuery, 0, CONFIG.ANALYSIS.MAX_GMAIL_THREADS);
+      console.log(`Found ${threads.length} email threads`);
+      
+      for (const thread of threads) {
+        try {
+          const messages = thread.getMessages();
+          
+          // Process messages in batches to avoid timeout
+          for (let i = 0; i < Math.min(messages.length, CONFIG.ANALYSIS.MAX_GMAIL_MESSAGES); i++) {
+            const message = messages[i];
+            
+            try {
+              const messageDate = message.getDate();
+              if (messageDate >= startDate && messageDate <= endDate) {
+                const recipients = extractRecipients(message);
+                
+                activities.push({
+                  type: 'Email',
+                  id: message.getId(),
+                  date: messageDate,
+                  title: sanitizeText(message.getSubject()) || 'No Subject',
+                  description: truncateText(sanitizeText(message.getPlainBody()), 500),
+                  attendees: recipients
+                });
+              }
+            } catch (e) {
+              console.warn('Error processing message in thread:', e);
+            }
+          }
+        } catch (e) {
+          console.warn('Error processing email thread:', e);
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching Gmail data:', e);
+      // Don't throw here, continue with calendar data only
+    }
+    
+  } catch (error) {
+    console.error('Error in fetchData:', error);
+    throw new Error(`Failed to fetch data: ${error.message}`);
   }
-  const query = `from:${userEmail} after:${startDate.toISOString().slice(0, 10)} before:${endDate.toISOString().slice(0, 10)}`;
-  const threads = GmailApp.search(query, 0, CONFIG.ANALYSIS.MAX_GMAIL_THREADS);
-  for (const thread of threads) {
-    const message = thread.getMessages()[0];
-    const recipients = [message.getTo(), message.getCc()].join(',').split(',').filter(e => e && e.trim() !== '');
-    activities.push({type: 'Email', id: message.getId(), date: message.getDate(), title: message.getSubject(), description: message.getPlainBody().substring(0, 500), attendees: recipients});
-  }
+  
+  console.log(`Total activities found: ${activities.length}`);
   return activities;
 }
 
 /**
- * Main analysis function, now includes topic summarization by a specific person.
+ * Helper function to format date for Gmail search
+ */
+function formatDateForGmail(date) {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}/${month}/${day}`;
+}
+
+/**
+ * Helper function to extract recipients from email message
+ */
+function extractRecipients(message) {
+  const recipients = [];
+  try {
+    const to = message.getTo();
+    const cc = message.getCc();
+    const bcc = message.getBcc();
+    
+    [to, cc, bcc].forEach(field => {
+      if (field) {
+        field.split(',').forEach(email => {
+          const trimmedEmail = email.trim();
+          if (trimmedEmail && isValidEmail(trimmedEmail)) {
+            recipients.push(trimmedEmail);
+          }
+        });
+      }
+    });
+  } catch (e) {
+    console.warn('Error extracting recipients:', e);
+  }
+  return recipients;
+}
+
+/**
+ * Helper function to truncate text
+ */
+function truncateText(text, maxLength) {
+  if (!text || text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
+
+/**
+ * Main analysis function with improved error handling and logic
  */
 function analyzeData(activities, weights, userDomain, topic, personEmail) {
   const analysis = {
-    activities: [], metrics: {}, distribution: { STRATEGIC_PLANNING: {count: 0, totalScore: 0, items: []}, LEADERSHIP_COMMS: {count: 0, totalScore: 0, items: []}, OPERATIONAL_EXECUTION: {count: 0, totalScore: 0, items: []}, CLIENT_STAKEHOLDER: {count: 0, totalScore: 0, items: []}, UNCATEGORIZED: {count: 0, totalScore: 0, items: []}}, workPatterns: {byHour: Array(24).fill(0), commSplit: {internal: 0, external: 0}}, recommendations: [], topicSummary: null };
-  if (activities.length === 0) {
-    analysis.metrics = { totalActivities: 0, totalMeetings: 0, totalEmails: 0, averageRelevance: 0, weightedStrategicFocus: 0 };
+    activities: [],
+    metrics: {},
+    distribution: {
+      STRATEGIC_PLANNING: { count: 0, totalScore: 0, items: [] },
+      LEADERSHIP_COMMS: { count: 0, totalScore: 0, items: [] },
+      OPERATIONAL_EXECUTION: { count: 0, totalScore: 0, items: [] },
+      CLIENT_STAKEHOLDER: { count: 0, totalScore: 0, items: [] },
+      UNCATEGORIZED: { count: 0, totalScore: 0, items: [] }
+    },
+    workPatterns: {
+      byHour: Array(24).fill(0),
+      commSplit: { internal: 0, external: 0 }
+    },
+    recommendations: [],
+    topicSummary: null
+  };
+
+  if (!activities || activities.length === 0) {
+    analysis.metrics = {
+      totalActivities: 0,
+      totalMeetings: 0,
+      totalEmails: 0,
+      averageRelevance: 0,
+      weightedStrategicFocus: 0
+    };
     analysis.recommendations.push("No activities found for the selected period.");
-    return analysis; 
+    return analysis;
   }
 
   // Run topic summary if a topic is provided
@@ -248,45 +647,131 @@ function analyzeData(activities, weights, userDomain, topic, personEmail) {
 
   // Perform the main work categorization and scoring
   for (const activity of activities) {
-    const textCorpus = `${activity.title.toLowerCase()} ${activity.description.toLowerCase()}`;
-    let bestCategory = 'UNCATEGORIZED';
-    let maxHits = 0;
-    for (const category in CONFIG.KEYWORDS) {
-      const hits = CONFIG.KEYWORDS[category].filter(kw => textCorpus.includes(kw)).length;
-      if (hits > maxHits) { maxHits = hits; bestCategory = category; }
+    try {
+      const textCorpus = `${activity.title.toLowerCase()} ${activity.description.toLowerCase()}`;
+      let bestCategory = 'UNCATEGORIZED';
+      let maxHits = 0;
+
+      // Find the category with the most keyword hits
+      for (const category in CONFIG.KEYWORDS) {
+        const keywords = CONFIG.KEYWORDS[category];
+        const hits = keywords.filter(keyword => safeContains(textCorpus, keyword)).length;
+        if (hits > maxHits) {
+          maxHits = hits;
+          bestCategory = category;
+        }
+      }
+
+      activity.category = bestCategory;
+
+      // Calculate relevance score
+      let score = CONFIG.SCORING.BASE_SCORE + (maxHits * CONFIG.SCORING.KEYWORD_HIT_VALUE);
+
+      // Add collaboration bonuses
+      const attendeeCount = activity.attendees ? activity.attendees.length : 0;
+      if (activity.type === 'Meeting' && attendeeCount > 1) {
+        score += CONFIG.SCORING.COLLABORATION_BONUS_MEETING;
+      }
+      if (activity.type === 'Email' && attendeeCount > 1) {
+        score += CONFIG.SCORING.COLLABORATION_BONUS_EMAIL;
+      }
+
+      // Add external communication bonus
+      const isExternal = activity.attendees && activity.attendees.some(email => {
+        return email && email.includes('@') && !email.endsWith('@' + userDomain);
+      });
+      if (isExternal) {
+        score += CONFIG.SCORING.EXTERNAL_COMM_BONUS;
+      }
+
+      activity.relevanceScore = Math.min(CONFIG.SCORING.MAX_SCORE, Math.round(score));
+      analysis.activities.push(activity);
+
+      // Update distribution
+      const dist = analysis.distribution[bestCategory];
+      dist.count++;
+      dist.totalScore += activity.relevanceScore;
+      dist.items.push(activity);
+
+      // Update work patterns
+      const hour = activity.date.getHours();
+      if (hour >= 0 && hour < 24) {
+        analysis.workPatterns.byHour[hour]++;
+      }
+
+      if (isExternal) {
+        analysis.workPatterns.commSplit.external++;
+      } else {
+        analysis.workPatterns.commSplit.internal++;
+      }
+    } catch (e) {
+      console.warn('Error analyzing activity:', activity.title, e);
     }
-    activity.category = bestCategory;
-    let score = CONFIG.SCORING.BASE_SCORE + (maxHits * CONFIG.SCORING.KEYWORD_HIT_VALUE);
-    if (activity.type === 'Meeting' && activity.attendees.length > 1) score += CONFIG.SCORING.COLLABORATION_BONUS_MEETING;
-    if (activity.type === 'Email' && activity.attendees.length > 1) score += CONFIG.SCORING.COLLABORATION_BONUS_EMAIL;
-    const isExternal = activity.attendees.some(a => a && a.includes('@') && !a.endsWith('@' + userDomain));
-    if (isExternal) score += CONFIG.SCORING.EXTERNAL_COMM_BONUS;
-    activity.relevanceScore = Math.min(CONFIG.SCORING.MAX_SCORE, Math.round(score));
-    analysis.activities.push(activity);
-    const dist = analysis.distribution[bestCategory];
-    dist.count++; dist.totalScore += activity.relevanceScore; dist.items.push(activity);
-    analysis.workPatterns.byHour[activity.date.getHours()]++;
-    isExternal ? analysis.workPatterns.commSplit.external++ : analysis.workPatterns.commSplit.internal++;
   }
+
+  // Calculate metrics
   const totalActivities = activities.length;
   analysis.metrics.totalActivities = totalActivities;
   analysis.metrics.totalMeetings = activities.filter(a => a.type === 'Meeting').length;
   analysis.metrics.totalEmails = activities.filter(a => a.type === 'Email').length;
-  analysis.metrics.averageRelevance = analysis.activities.reduce((sum, a) => sum + a.relevanceScore, 0) / totalActivities || 0;
+  analysis.metrics.averageRelevance = totalActivities > 0 ? 
+    analysis.activities.reduce((sum, a) => sum + a.relevanceScore, 0) / totalActivities : 0;
+
+  // Calculate weighted strategic focus
   let weightedScoreSum = 0;
-  const totalWeight = Object.values(weights).reduce((s,w) => s+w, 0) || 100;
+  const totalWeight = Object.values(weights).reduce((s, w) => s + w, 0) || 100;
+
   for (const category in analysis.distribution) {
     if (weights[category]) {
-      const categoryPercentage = (analysis.distribution[category].count / totalActivities) * 100;
+      const categoryPercentage = totalActivities > 0 ? 
+        (analysis.distribution[category].count / totalActivities) * 100 : 0;
       weightedScoreSum += categoryPercentage * (weights[category] / totalWeight);
     }
   }
   analysis.metrics.weightedStrategicFocus = weightedScoreSum;
-  const strategicPct = (analysis.distribution.STRATEGIC_PLANNING.count / totalActivities) * 100;
-  if (strategicPct > 40) analysis.recommendations.push("✅ Strong focus on strategic initiatives is evident.");
-  if ((analysis.distribution.OPERATIONAL_EXECUTION.count / totalActivities) * 100 > 50) analysis.recommendations.push("📈 Significant time on operational tasks. Consider delegation opportunities.");
-  if (analysis.recommendations.length === 0) analysis.recommendations.push("📊 Work distribution appears balanced.");
+
+  // Generate recommendations
+  generateRecommendations(analysis, totalActivities);
+
   return analysis;
+}
+
+/**
+ * Generates recommendations based on analysis
+ */
+function generateRecommendations(analysis, totalActivities) {
+  if (totalActivities === 0) {
+    analysis.recommendations.push("No activities found to analyze.");
+    return;
+  }
+
+  const strategicPct = (analysis.distribution.STRATEGIC_PLANNING.count / totalActivities) * 100;
+  const operationalPct = (analysis.distribution.OPERATIONAL_EXECUTION.count / totalActivities) * 100;
+  const leadershipPct = (analysis.distribution.LEADERSHIP_COMMS.count / totalActivities) * 100;
+
+  if (strategicPct > 40) {
+    analysis.recommendations.push("✅ Strong focus on strategic initiatives is evident.");
+  }
+  
+  if (operationalPct > 50) {
+    analysis.recommendations.push("📈 Significant time on operational tasks. Consider delegation opportunities.");
+  }
+  
+  if (leadershipPct > 30) {
+    analysis.recommendations.push("👥 Good investment in leadership and team development.");
+  }
+  
+  const outOfHoursActivities = analysis.workPatterns.byHour.slice(0, CONFIG.ANALYSIS.WORK_HOURS.START)
+    .concat(analysis.workPatterns.byHour.slice(CONFIG.ANALYSIS.WORK_HOURS.END))
+    .reduce((sum, count) => sum + count, 0);
+  
+  if (outOfHoursActivities > totalActivities * 0.2) {
+    analysis.recommendations.push("🕐 High after-hours activity detected. Consider work-life balance.");
+  }
+  
+  if (analysis.recommendations.length === 0) {
+    analysis.recommendations.push("📊 Work distribution appears balanced across categories.");
+  }
 }
 
 /**
@@ -298,8 +783,8 @@ function summarizeTopicFromActivities(topic, personEmail, activities) {
   // First, filter by the topic
   let relevantEmails = activities.filter(activity => 
     activity.type === 'Email' &&
-    (activity.title.toLowerCase().includes(lowerCaseTopic) || 
-     activity.description.toLowerCase().includes(lowerCaseTopic))
+    (safeContains(activity.title, lowerCaseTopic) || 
+     safeContains(activity.description, lowerCaseTopic))
   );
 
   // If a person's email is provided, filter the results further
@@ -316,7 +801,9 @@ function summarizeTopicFromActivities(topic, personEmail, activities) {
 
   const uniqueParticipants = new Set();
   relevantEmails.forEach(email => {
-    email.attendees.forEach(p => uniqueParticipants.add(p));
+    email.attendees.forEach(p => {
+      if (p) uniqueParticipants.add(p);
+    });
   });
 
   return {
@@ -326,32 +813,60 @@ function summarizeTopicFromActivities(topic, personEmail, activities) {
   };
 }
 
-
+/**
+ * Generates the report document with improved error handling
+ */
 function generateReport(analysis, inputs) {
-  const docName = `Work Summary - ${inputs.fullName} (${inputs.startDate.toISOString().slice(0, 10)})`;
-  const doc = DocumentApp.create(docName);
-  const body = doc.getBody();
-  body.appendParagraph(doc.getName()).setHeading(DocumentApp.ParagraphHeading.TITLE);
-  body.appendParagraph(`Analysis Period: ${inputs.startDate.toLocaleDateString()} to ${inputs.endDate.toLocaleDateString()}`);
-  
-  // Insert the topic summary section if it exists
-  if (analysis.topicSummary) {
-    insertTopicSummary(body, analysis.topicSummary, inputs.topic, inputs.personEmail);
+  try {
+    const docName = `Work Summary - ${inputs.fullName} (${inputs.startDate.toISOString().slice(0, 10)})`;
+    const doc = DocumentApp.create(docName);
+    const body = doc.getBody();
+    
+    // Clear default content
+    body.clear();
+    
+    // Title
+    body.appendParagraph(doc.getName()).setAttributes(CONFIG.STYLE.TITLE);
+    body.appendParagraph(`Analysis Period: ${inputs.startDate.toLocaleDateString()} to ${inputs.endDate.toLocaleDateString()}`)
+        .setAttributes(CONFIG.STYLE.HEADER);
+    body.appendParagraph(''); // Empty line
+    
+    // Insert the topic summary section if it exists
+    if (analysis.topicSummary) {
+      insertTopicSummary(body, analysis.topicSummary, inputs.topic, inputs.personEmail);
+    }
+    
+    // Executive Summary
+    insertExecutiveSummary(body, analysis.metrics);
+    
+    // Performance Metrics
+    body.appendParagraph('Performance Metrics').setAttributes(CONFIG.STYLE.H1);
+    insertMetricsTable(body, analysis.metrics);
+    
+    // Activity Distribution
+    body.appendParagraph('Activity Distribution').setAttributes(CONFIG.STYLE.H1);
+    insertDistributionTable(body, analysis.distribution, analysis.metrics.totalActivities);
+    
+    // Detailed Activities
+    body.appendParagraph('Detailed Activities').setAttributes(CONFIG.STYLE.H1);
+    insertDetailedActivities(body, analysis.distribution);
+    
+    // Work Patterns
+    body.appendParagraph('Work Patterns').setAttributes(CONFIG.STYLE.H1);
+    insertWorkPatterns(body, analysis.workPatterns, analysis.metrics.totalActivities);
+    
+    // Executive Recommendations
+    body.appendParagraph('Executive Recommendations').setAttributes(CONFIG.STYLE.H1);
+    analysis.recommendations.forEach(rec => {
+      body.appendListItem(rec);
+    });
+    
+    doc.saveAndClose();
+    return doc.getUrl();
+  } catch (error) {
+    console.error('Error generating report:', error);
+    throw new Error(`Failed to generate report: ${error.message}`);
   }
-  
-  insertExecutiveSummary(body, analysis.metrics);
-  body.appendParagraph('Performance Metrics').setHeading(DocumentApp.ParagraphHeading.HEADING1);
-  insertMetricsTable(body, analysis.metrics);
-  body.appendParagraph('Activity Distribution').setHeading(DocumentApp.ParagraphHeading.HEADING1);
-  insertDistributionTable(body, analysis.distribution, analysis.metrics.totalActivities);
-  body.appendParagraph('Detailed Activities').setHeading(DocumentApp.ParagraphHeading.HEADING1);
-  insertDetailedActivities(body, analysis.distribution);
-  body.appendParagraph('Work Patterns').setHeading(DocumentApp.ParagraphHeading.HEADING1);
-  insertWorkPatterns(body, analysis.workPatterns, analysis.metrics.totalActivities);
-  body.appendParagraph('Executive Recommendations').setHeading(DocumentApp.ParagraphHeading.HEADING1);
-  analysis.recommendations.forEach(rec => body.appendListItem(rec));
-  doc.saveAndClose();
-  return doc.getUrl();
 }
 
 /**
@@ -363,80 +878,178 @@ function insertTopicSummary(body, topicSummary, topic, personEmail) {
     heading += ' with ' + personEmail;
   }
   
-  body.appendParagraph(heading).setHeading(DocumentApp.ParagraphHeading.HEADING1);
+  body.appendParagraph(heading).setAttributes(CONFIG.STYLE.H1);
+  
   const tableData = [
     ['Metric', 'Details'],
     ['Matching Email Threads', topicSummary.count.toString()],
     ['Key Conversation Subjects', topicSummary.topSubjects.join('\n') || 'N/A'],
-    ['Key Participants', topicSummary.participants.slice(0, 10).join(', ') + (topicSummary.participants.length > 10 ? '...' : '')]
+    ['Key Participants', topicSummary.participants.slice(0, 10).join(', ') + 
+                        (topicSummary.participants.length > 10 ? '...' : '')]
   ];
   createStyledTable(body, tableData);
 }
 
+/**
+ * Inserts executive summary with key metrics
+ */
 function insertExecutiveSummary(body, metrics) {
-  const data = [['Strategic Focus Score', `${metrics.weightedStrategicFocus.toFixed(1)}%`, 'Alignment with priorities.'], ['Avg. Relevance Score', `${metrics.averageRelevance.toFixed(1)} / 100`, 'Average impact of activities.'], ['Total Activities', `${metrics.totalActivities}`, `Meetings & sent emails.`]];
+  const data = [
+    ['Strategic Focus Score', `${metrics.weightedStrategicFocus.toFixed(1)}%`, 'Alignment with role priorities.'],
+    ['Avg. Relevance Score', `${metrics.averageRelevance.toFixed(1)} / 100`, 'Average impact of activities.'],
+    ['Total Activities', `${metrics.totalActivities}`, `Meetings & sent emails analyzed.`]
+  ];
+  
   const table = body.appendTable(data);
   table.setBorderWidth(0);
+  
   for (let i = 0; i < data.length; i++) {
     table.getCell(i, 0).setAttributes(CONFIG.STYLE.H2);
-    table.getCell(i, 1).getChild(0).asParagraph().setAttributes(CONFIG.STYLE.GREEN_TEXT).setBold(true).setFontSize(14);
+    table.getCell(i, 1).getChild(0).asParagraph()
+         .setAttributes(CONFIG.STYLE.GREEN_TEXT)
+         .setBold(true)
+         .setFontSize(14);
     table.getCell(i, 2).getChild(0).asParagraph().setItalic(true);
   }
   body.appendParagraph('');
 }
 
+/**
+ * Inserts metrics table
+ */
 function insertMetricsTable(body, metrics) {
-  const data = [['Metric', 'Value'], ['Total Activities', metrics.totalActivities], ['Meetings', metrics.totalMeetings], ['Emails Sent', metrics.totalEmails], ['Avg. Relevance', `${metrics.averageRelevance.toFixed(1)}%`]];
+  const data = [
+    ['Metric', 'Value'],
+    ['Total Activities', metrics.totalActivities.toString()],
+    ['Meetings', metrics.totalMeetings.toString()],
+    ['Emails Sent', metrics.totalEmails.toString()],
+    ['Avg. Relevance', `${metrics.averageRelevance.toFixed(1)}%`]
+  ];
   createStyledTable(body, data);
 }
 
+/**
+ * Inserts distribution table
+ */
 function insertDistributionTable(body, distribution, total) {
-  if (total === 0) { body.appendParagraph("No activities found to distribute."); return; };
-  const data = [['Category', '% of Activities', 'Avg. Relevance']];
-  const map = {STRATEGIC_PLANNING: '🗺️ Strategic', LEADERSHIP_COMMS: '👥 Leadership', OPERATIONAL_EXECUTION: '⚙️ Operational', CLIENT_STAKEHOLDER: '🤝 Client-Facing', UNCATEGORIZED: '📥 Uncategorized'};
-  for (const cat in map) {
-    const item = distribution[cat];
-    if (item.count > 0) { data.push([map[cat], `${((item.count/total)*100).toFixed(1)}%`, `${(item.totalScore/item.count).toFixed(1)}%`]); }
+  if (total === 0) {
+    body.appendParagraph("No activities found to distribute.");
+    return;
   }
+  
+  const data = [['Category', '% of Activities', 'Avg. Relevance']];
+  const categoryMap = {
+    STRATEGIC_PLANNING: '🗺️ Strategic',
+    LEADERSHIP_COMMS: '👥 Leadership',
+    OPERATIONAL_EXECUTION: '⚙️ Operational',
+    CLIENT_STAKEHOLDER: '🤝 Client-Facing',
+    UNCATEGORIZED: '📥 Uncategorized'
+  };
+  
+  for (const cat in categoryMap) {
+    const item = distribution[cat];
+    if (item.count > 0) {
+      const percentage = ((item.count / total) * 100).toFixed(1);
+      const avgRelevance = (item.totalScore / item.count).toFixed(1);
+      data.push([categoryMap[cat], `${percentage}%`, `${avgRelevance}%`]);
+    }
+  }
+  
   createStyledTable(body, data);
 }
 
+/**
+ * Inserts detailed activities by category
+ */
 function insertDetailedActivities(body, distribution) {
-  const map = {STRATEGIC_PLANNING: '🗺️ Top Strategic Activities', LEADERSHIP_COMMS: '👥 Top Leadership Activities', OPERATIONAL_EXECUTION: '⚙️ Top Operational Activities', CLIENT_STAKEHOLDER: '🤝 Top Client-Facing Activities'};
+  const categoryMap = {
+    STRATEGIC_PLANNING: '🗺️ Top Strategic Activities',
+    LEADERSHIP_COMMS: '👥 Top Leadership Activities',
+    OPERATIONAL_EXECUTION: '⚙️ Top Operational Activities',
+    CLIENT_STAKEHOLDER: '🤝 Top Client-Facing Activities'
+  };
+  
   let hasActivities = false;
-  for (const cat in map) {
+  
+  for (const cat in categoryMap) {
     const items = distribution[cat].items;
     if (items.length > 0) {
       hasActivities = true;
-      body.appendParagraph(map[cat]).setHeading(DocumentApp.ParagraphHeading.HEADING2);
-      const sorted = items.sort((a,b)=>b.relevanceScore - a.relevanceScore).slice(0, CONFIG.ANALYSIS.TOP_N_ACTIVITIES);
+      body.appendParagraph(categoryMap[cat]).setAttributes(CONFIG.STYLE.H2);
+      
+      const sorted = items.sort((a, b) => b.relevanceScore - a.relevanceScore)
+                          .slice(0, CONFIG.ANALYSIS.TOP_N_ACTIVITIES);
+      
       sorted.forEach(item => {
-        const style = item.relevanceScore > 70 ? CONFIG.STYLE.GREEN_TEXT : item.relevanceScore > 40 ? CONFIG.STYLE.ORANGE_TEXT : CONFIG.STYLE.RED_TEXT;
-        const li = body.appendListItem(`[${item.date.toLocaleDateString()}] ${item.title}`);
-        li.appendText(` (Score: `).appendText(`${item.relevanceScore}`).setAttributes(style).setBold(true).appendText(`)`);
+        const style = item.relevanceScore > 70 ? CONFIG.STYLE.GREEN_TEXT :
+                     item.relevanceScore > 40 ? CONFIG.STYLE.ORANGE_TEXT :
+                     CONFIG.STYLE.RED_TEXT;
+        
+        const listItem = body.appendListItem(`[${item.date.toLocaleDateString()}] ${item.title}`);
+        listItem.appendText(` (Score: `)
+                .appendText(`${item.relevanceScore}`).setAttributes(style).setBold(true)
+                .appendText(`)`);
       });
     }
   }
-  if (!hasActivities) body.appendParagraph("No categorized activities to detail.");
+  
+  if (!hasActivities) {
+    body.appendParagraph("No categorized activities to detail.");
+  }
 }
 
+/**
+ * Inserts work patterns analysis
+ */
 function insertWorkPatterns(body, patterns, total) {
-  if (total === 0) { body.appendParagraph("No work patterns to analyze."); return; };
+  if (total === 0) {
+    body.appendParagraph("No work patterns to analyze.");
+    return;
+  }
+  
   const totalComm = patterns.commSplit.internal + patterns.commSplit.external;
-  body.appendParagraph('Communication Focus').setHeading(DocumentApp.ParagraphHeading.HEADING2);
-  body.appendListItem(`Internal: ${totalComm > 0 ? ((patterns.commSplit.internal/totalComm)*100).toFixed(0) : 0}%`);
-  body.appendListItem(`External: ${totalComm > 0 ? ((patterns.commSplit.external/totalComm)*100).toFixed(0) : 0}%`);
+  
+  // Communication Focus
+  body.appendParagraph('Communication Focus').setAttributes(CONFIG.STYLE.H2);
+  if (totalComm > 0) {
+    body.appendListItem(`Internal: ${((patterns.commSplit.internal / totalComm) * 100).toFixed(0)}%`);
+    body.appendListItem(`External: ${((patterns.commSplit.external / totalComm) * 100).toFixed(0)}%`);
+  } else {
+    body.appendListItem("No communication data available.");
+  }
   body.appendParagraph('');
+  
+  // Activity Timing
   let outOfHours = 0;
-  patterns.byHour.forEach((count, hour) => { if (count > 0 && (hour < CONFIG.ANALYSIS.WORK_HOURS.START || hour >= CONFIG.ANALYSIS.WORK_HOURS.END)) { outOfHours += count; } });
-  body.appendParagraph('Activity Timing').setHeading(DocumentApp.ParagraphHeading.HEADING2);
-  body.appendListItem(`Work outside standard hours: ${total > 0 ? ((outOfHours/total)*100).toFixed(0) : 0}%`);
-  body.appendListItem(`Peak hour: ${patterns.byHour.indexOf(Math.max(...patterns.byHour))}:00`);
+  patterns.byHour.forEach((count, hour) => {
+    if (count > 0 && (hour < CONFIG.ANALYSIS.WORK_HOURS.START || hour >= CONFIG.ANALYSIS.WORK_HOURS.END)) {
+      outOfHours += count;
+    }
+  });
+  
+  body.appendParagraph('Activity Timing').setAttributes(CONFIG.STYLE.H2);
+  body.appendListItem(`Work outside standard hours: ${total > 0 ? ((outOfHours / total) * 100).toFixed(0) : 0}%`);
+  
+  const peakHour = patterns.byHour.indexOf(Math.max(...patterns.byHour));
+  body.appendListItem(`Peak activity hour: ${peakHour}:00`);
 }
 
+/**
+ * Creates a styled table with proper formatting
+ */
 function createStyledTable(body, data) {
-  if (data.length < 2) { body.appendParagraph("No data available."); return; }
+  if (data.length < 2) {
+    body.appendParagraph("No data available.");
+    return;
+  }
+  
   const table = body.appendTable(data);
-  table.getRow(0).setAttributes(CONFIG.STYLE.TABLE_HEADER_CELL);
+  
+  // Style the header row
+  const headerRow = table.getRow(0);
+  for (let j = 0; j < headerRow.getNumCells(); j++) {
+    headerRow.getCell(j).setAttributes(CONFIG.STYLE.TABLE_HEADER_CELL);
+  }
+  
   body.appendParagraph('');
 }
