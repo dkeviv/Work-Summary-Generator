@@ -2,50 +2,49 @@
 // WORK SUMMARY GENERATOR - CLEAN SYNTAX VERSION
 // ================================================================================
 
-// --- GLOBAL CONFIGURATION ---
 var CONFIG = {
     KEYWORDS: {
         INNOVATION: {
-            stems: ['innovat', 'creat', 'design', 'prototype', 'pilot', 'experiment', 'research', 'breakthrough', 'disrupt'],
+            stems: ['innovat', 'creat', 'design', 'prototype', 'pilot', 'experiment'],
             exact: ['mvp', 'r&d', 'poc', 'beta', 'alpha'],
             patterns: ['proof of concept', 'minimum viable', 'design thinking']
         },
         EXECUTION: {
-            stems: ['deliver', 'ship', 'launch', 'complet', 'implement', 'deploy', 'achiev', 'finish', 'execut'],
-            exact: ['go-live', 'rollout', 'milestone', 'deadline', 'kpi', 'roi', 'target'],
+            stems: ['deliver', 'ship', 'launch', 'complet', 'implement', 'deploy'],
+            exact: ['go-live', 'rollout', 'milestone', 'deadline', 'kpi', 'roi'],
             patterns: ['project completion', 'goal completion', 'went live']
         },
         COLLABORATION: {
-            stems: ['collaborat', 'partner', 'coordinat', 'align', 'sync', 'team', 'group', 'joint', 'shared'],
-            exact: ['cross-functional', 'stakeholder', 'workshop', 'meeting', 'together'],
+            stems: ['collaborat', 'partner', 'coordinat', 'align', 'sync', 'team'],
+            exact: ['cross-functional', 'stakeholder', 'workshop', 'meeting'],
             patterns: ['working with', 'team effort', 'group effort']
         },
         LEADERSHIP: {
-            stems: ['lead', 'mentor', 'coach', 'guid', 'direct', 'manag', 'supervis', 'influenc', 'inspir', 'motivat'],
-            exact: ['1:1', 'one-on-one', 'feedback', 'delegation', 'vision', 'strategy'],
+            stems: ['lead', 'mentor', 'coach', 'guid', 'direct', 'manag'],
+            exact: ['1:1', 'one-on-one', 'feedback', 'delegation', 'vision'],
             patterns: ['decision making', 'strategic direction', 'team development']
         }
     },
     
     OUTCOME_KEYWORDS: {
         revenue: {
-            stems: ['revenue', 'sales', 'profit', 'income', 'earning', 'monetiz', 'deal', 'contract'],
-            exact: ['roi', 'margin', 'pricing', 'upsell', 'renewal'],
+            stems: ['revenue', 'sales', 'profit', 'income', 'deal'],
+            exact: ['roi', 'margin', 'pricing'],
             multiplier: 2.5
         },
         customer_satisfaction: {
-            stems: ['customer', 'client', 'user', 'satisfaction', 'experience', 'retention', 'success'],
-            exact: ['nps', 'csat', 'churn', 'ux', 'ui'],
+            stems: ['customer', 'client', 'user', 'satisfaction', 'experience'],
+            exact: ['nps', 'csat', 'churn', 'ux'],
             multiplier: 2.0
         },
         efficiency: {
-            stems: ['efficiency', 'productivity', 'automat', 'optim', 'streamlin', 'scale', 'speed'],
-            exact: ['sla', 'turnaround', 'throughput'],
+            stems: ['efficiency', 'productivity', 'automat', 'optim'],
+            exact: ['sla', 'turnaround'],
             multiplier: 1.8
         },
         market_position: {
-            stems: ['market', 'competit', 'brand', 'growth', 'expansion', 'penetrat'],
-            exact: ['market share', 'differentiation'],
+            stems: ['market', 'competit', 'brand', 'growth'],
+            exact: ['market share'],
             multiplier: 2.2
         }
     },
@@ -57,19 +56,14 @@ var CONFIG = {
         PATTERN_MATCH_VALUE: 20,
         COLLABORATION_BONUS: 15,
         OUTCOME_BASE_BONUS: 25,
-        MAX_CATEGORY_SCORE: 100,
-        MULTI_LABEL_THRESHOLD: 30
+        MAX_CATEGORY_SCORE: 100
     },
 
     STYLE: {
-        HEADER: { [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 10, [DocumentApp.Attribute.ITALIC]: true },
+        HEADER: { [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 10 },
         TITLE: { [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 24, [DocumentApp.Attribute.BOLD]: true },
-        H1: { [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 16, [DocumentApp.Attribute.BOLD]: true, [DocumentApp.Attribute.FOREGROUND_COLOR]: '#00558C' },
+        H1: { [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 16, [DocumentApp.Attribute.BOLD]: true },
         H2: { [DocumentApp.Attribute.FONT_FAMILY]: 'Calibri', [DocumentApp.Attribute.FONT_SIZE]: 12, [DocumentApp.Attribute.BOLD]: true }
-    },
-    
-    ANALYSIS: {
-        WORK_HOURS: { START: 8, END: 18 }
     }
 };
 
@@ -94,7 +88,7 @@ function onGmailHomepage(e) {
 }
 
 // ================================================================================
-// JOB MANAGEMENT SYSTEM
+// JOB MANAGEMENT
 // ================================================================================
 
 function getActiveJobs() {
@@ -131,7 +125,7 @@ function createJob(userInputs) {
     status: 'pending',
     userInputs: userInputs,
     startTime: new Date().toISOString(),
-    progress: 'Job created, waiting to start...'
+    progress: 'Job created'
   };
   properties.setProperty(jobId, JSON.stringify(jobData));
   
@@ -182,8 +176,7 @@ function createHomepageCard(jobs) {
     .setHeader(CardService.newCardHeader().setTitle('Work Summary Generator'));
 
   var newReportSection = CardService.newCardSection()
-    .setHeader("Create New Report")
-    .setCollapsible(true);
+    .setHeader("Create New Report");
   
   newReportSection.addWidget(
     CardService.newTextButton()
@@ -204,8 +197,7 @@ function createHomepageCard(jobs) {
       
       var jobWidget = CardService.newKeyValue()
         .setTopLabel(job.userInputs.fullName + ' - ' + timeStr)
-        .setContent(statusInfo.icon + ' ' + statusInfo.text)
-        .setMultiline(true);
+        .setContent(statusInfo.icon + ' ' + statusInfo.text);
         
       if (job.progress) {
         jobWidget.setBottomLabel(job.progress);
@@ -238,23 +230,19 @@ function getStatusInfo(status) {
   if (status === 'failed') return { icon: '❌', text: 'Failed' };
   return { icon: '❓', text: 'Unknown' };
 }
-/**
- * Creates the configuration card for new reports
- */
-function createConfigurationCard() {
-  const currentUserEmail = Session.getActiveUser().getEmail();
 
-  const builder = CardService.newCardBuilder()
+function createConfigurationCard() {
+  var currentUserEmail = Session.getActiveUser().getEmail();
+
+  var builder = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader().setTitle('Report Configuration'));
 
-  // Personal Information Section
-  const personalSection = CardService.newCardSection().setHeader('Personal Information');
+  var personalSection = CardService.newCardSection().setHeader('Personal Information');
   
   personalSection.addWidget(
     CardService.newTextInput()
       .setFieldName('fullName')
       .setTitle("Full Name")
-      .setHint("Your name as it should appear on the report")
   );
 
   personalSection.addWidget(
@@ -262,7 +250,6 @@ function createConfigurationCard() {
       .setFieldName('userEmail')
       .setTitle('Email to Analyze')
       .setValue(currentUserEmail)
-      .setHint("The email account to analyze for work activities")
   );
 
   personalSection.addWidget(
@@ -270,13 +257,11 @@ function createConfigurationCard() {
       .setFieldName('notificationEmail')
       .setTitle('Notification Email')
       .setValue(currentUserEmail)
-      .setHint("Where to send the completed report link")
   );
 
   builder.addSection(personalSection);
 
-  // Date Range Section
-  const dateSection = CardService.newCardSection().setHeader('Analysis Period');
+  var dateSection = CardService.newCardSection().setHeader('Analysis Period');
   
   dateSection.addWidget(
     CardService.newDatePicker()
@@ -292,10 +277,9 @@ function createConfigurationCard() {
 
   builder.addSection(dateSection);
 
-  // Role Profile Section
-  const roleSection = CardService.newCardSection().setHeader('Role Profile');
+  var roleSection = CardService.newCardSection().setHeader('Role Profile');
 
-  const roleSelect = CardService.newSelectionInput()
+  var roleSelect = CardService.newSelectionInput()
     .setFieldName('role_select')
     .setTitle("Role Type")
     .setType(CardService.SelectionInputType.DROPDOWN)
@@ -304,14 +288,9 @@ function createConfigurationCard() {
     .addItem(ROLE_PRESETS.EXECUTIVE.name, "EXECUTIVE", false);
   
   roleSection.addWidget(roleSelect);
-  roleSection.addWidget(
-    CardService.newTextParagraph()
-      .setText("This determines how your activities are weighted for Innovation, Execution, Collaboration, and Leadership.")
-  );
   
   builder.addSection(roleSection);
 
-  // Generate Button
   builder.setFixedFooter(
     CardService.newFixedFooter().setPrimaryButton(
       CardService.newTextButton()
@@ -324,17 +303,94 @@ function createConfigurationCard() {
   return builder.build();
 }
 
-/**
- * Creates job detail view card
- */
+function createErrorCard(errorMessage) {
+  return CardService.newCardBuilder()
+    .setHeader(CardService.newCardHeader().setTitle('Error'))
+    .addSection(
+      CardService.newCardSection()
+        .addWidget(CardService.newTextParagraph().setText('An error occurred: ' + errorMessage))
+    )
+    .build();
+}
+
+// ================================================================================
+// ACTION HANDLERS
+// ================================================================================
+
+function navigateToConfigurationCard() {
+  return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().pushCard(createConfigurationCard()))
+    .build();
+}
+
+function createReportAction(e) {
+  try {
+    var formInputs = e.formInputs;
+    
+    if (!formInputs.fullName || !formInputs.startDate || !formInputs.endDate) {
+      return createNotification('Please fill in all required fields');
+    }
+
+    var selectedRole = formInputs.role_select ? formInputs.role_select[0] : 'INDIVIDUAL_CONTRIBUTOR';
+    var weightsArray = ROLE_PRESETS[selectedRole].weights.split(',');
+    
+    var userInputs = {
+      fullName: formInputs.fullName[0],
+      userEmail: formInputs.userEmail ? formInputs.userEmail[0] : Session.getActiveUser().getEmail(),
+      notificationEmail: formInputs.notificationEmail ? formInputs.notificationEmail[0] : Session.getActiveUser().getEmail(),
+      startDate: new Date(formInputs.startDate[0].msSinceEpoch),
+      endDate: new Date(formInputs.endDate[0].msSinceEpoch),
+      roleType: selectedRole,
+      weights: {
+        INNOVATION: parseInt(weightsArray[0]),
+        EXECUTION: parseInt(weightsArray[1]),
+        COLLABORATION: parseInt(weightsArray[2]),
+        LEADERSHIP: parseInt(weightsArray[3])
+      }
+    };
+
+    if (userInputs.startDate >= userInputs.endDate) {
+      return createNotification('End date must be after start date');
+    }
+
+    var jobId = createJob(userInputs);
+    scheduleJobProcessing(jobId);
+    
+    var jobs = getActiveJobs();
+    return CardService.newActionResponseBuilder()
+      .setNavigation(CardService.newNavigation().updateCard(createHomepageCard(jobs)))
+      .setNotification(CardService.newNotification().setText('Report generation started'))
+      .build();
+      
+  } catch (error) {
+    console.error('Error in createReportAction:', error);
+    return createNotification('Error: ' + error.toString());
+  }
+}
+
+function viewJobDetails(e) {
+  var jobId = e.parameters.jobId;
+  var properties = PropertiesService.getUserProperties();
+  var jobDataString = properties.getProperty(jobId);
+  
+  if (!jobDataString) {
+    return createNotification("Job not found");
+  }
+  
+  var jobData = JSON.parse(jobDataString);
+  
+  return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().pushCard(createJobDetailCard(jobData)))
+    .build();
+}
+
 function createJobDetailCard(jobData) {
-  const builder = CardService.newCardBuilder()
+  var builder = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader().setTitle('Job Details'));
 
-  const detailSection = CardService.newCardSection();
+  var detailSection = CardService.newCardSection();
   
-  const statusInfo = getStatusInfo(jobData.status);
-  const timeStr = new Date(jobData.startTime).toLocaleString();
+  var statusInfo = getStatusInfo(jobData.status);
   
   detailSection.addWidget(
     CardService.newKeyValue()
@@ -345,23 +401,8 @@ function createJobDetailCard(jobData) {
   detailSection.addWidget(
     CardService.newKeyValue()
       .setTopLabel('Status')
-      .setContent(`${statusInfo.icon} ${statusInfo.text}`)
+      .setContent(statusInfo.icon + ' ' + statusInfo.text)
   );
-  
-  detailSection.addWidget(
-    CardService.newKeyValue()
-      .setTopLabel('Started')
-      .setContent(timeStr)
-  );
-  
-  if (jobData.progress) {
-    detailSection.addWidget(
-      CardService.newKeyValue()
-        .setTopLabel('Progress')
-        .setContent(jobData.progress)
-        .setMultiline(true)
-    );
-  }
   
   if (jobData.reportUrl) {
     detailSection.addWidget(
@@ -372,23 +413,18 @@ function createJobDetailCard(jobData) {
             .setFunctionName('openReportAndMarkViewed')
             .setParameters({jobId: jobData.id, reportUrl: jobData.reportUrl})
         )
-        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
     );
   }
   
   if (jobData.errorMessage) {
     detailSection.addWidget(
       CardService.newKeyValue()
-        .setTopLabel('Error Details')
+        .setTopLabel('Error')
         .setContent(jobData.errorMessage)
-        .setMultiline(true)
     );
   }
   
-  // Action buttons
-  const actionSection = CardService.newCardSection().setHeader('Actions');
-  
-  actionSection.addWidget(
+  detailSection.addWidget(
     CardService.newTextButton()
       .setText('Dismiss Job')
       .setOnClickAction(
@@ -398,165 +434,32 @@ function createJobDetailCard(jobData) {
       )
   );
   
-  actionSection.addWidget(
-    CardService.newTextButton()
-      .setText('Back to Home')
-      .setOnClickAction(CardService.newAction().setFunctionName('navigateToHome'))
-  );
-  
   builder.addSection(detailSection);
-  builder.addSection(actionSection);
   
   return builder.build();
 }
 
-/**
- * Creates error display card
- */
-function createErrorCard(errorMessage) {
-  return CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader().setTitle('Error'))
-    .addSection(
-      CardService.newCardSection()
-        .addWidget(
-          CardService.newTextParagraph().setText('An error occurred:')
-        )
-        .addWidget(
-          CardService.newKeyValue()
-            .setTopLabel("Details")
-            .setContent(errorMessage)
-            .setMultiline(true)
-        )
-    )
-    .build();
-}
-
-// ================================================================================
-// ACTION HANDLERS
-// ================================================================================
-
-/**
- * Navigation action to configuration card
- */
-function navigateToConfigurationCard() {
-  return CardService.newActionResponseBuilder()
-    .setNavigation(CardService.newNavigation().pushCard(createConfigurationCard()))
-    .build();
-}
-
-/**
- * Navigation action back to home
- */
-function navigateToHome() {
-  const jobs = getActiveJobs();
-  return CardService.newActionResponseBuilder()
-    .setNavigation(CardService.newNavigation().updateCard(createHomepageCard(jobs)))
-    .build();
-}
-
-/**
- * Creates new report job from form input
- */
-function createReportAction(e) {
-  try {
-    const formInputs = e.formInputs;
-    
-    // Validate required fields
-    if (!formInputs.fullName || !formInputs.startDate || !formInputs.endDate) {
-      return createNotification('Please fill in all required fields');
-    }
-
-    const selectedRole = formInputs.role_select ? formInputs.role_select[0] : 'INDIVIDUAL_CONTRIBUTOR';
-    const weightsArray = ROLE_PRESETS[selectedRole].weights.split(',').map(w => parseInt(w.trim()));
-
-    const userInputs = {
-      fullName: formInputs.fullName[0],
-      userEmail: formInputs.userEmail ? formInputs.userEmail[0] : Session.getActiveUser().getEmail(),
-      notificationEmail: formInputs.notificationEmail ? formInputs.notificationEmail[0] : Session.getActiveUser().getEmail(),
-      startDate: new Date(formInputs.startDate[0].msSinceEpoch),
-      endDate: new Date(formInputs.endDate[0].msSinceEpoch),
-      roleType: selectedRole,
-      weights: {
-        INNOVATION: weightsArray[0],
-        EXECUTION: weightsArray[1],
-        COLLABORATION: weightsArray[2], 
-        LEADERSHIP: weightsArray[3]
-      }
-    };
-
-    // Validate date range
-    if (userInputs.startDate >= userInputs.endDate) {
-      return createNotification('End date must be after start date');
-    }
-
-    // Create job and schedule processing
-    const jobId = createJob(userInputs);
-    scheduleJobProcessing(jobId);
-    
-    // Navigate back to home to show the new job
-    const jobs = getActiveJobs();
-    return CardService.newActionResponseBuilder()
-      .setNavigation(CardService.newNavigation().updateCard(createHomepageCard(jobs)))
-      .setNotification(CardService.newNotification().setText('Report generation started'))
-      .build();
-      
-  } catch (error) {
-    console.error('Error in createReportAction:', error);
-    return createNotification(`Error: ${error.toString()}`);
-  }
-}
-
-/**
- * View job details action
- */
-function viewJobDetails(e) {
-  const jobId = e.parameters.jobId;
-  const properties = PropertiesService.getUserProperties();
-  const jobDataString = properties.getProperty(jobId);
-  
-  if (!jobDataString) {
-    return createNotification("Job not found");
-  }
-  
-  const jobData = JSON.parse(jobDataString);
-  
-  return CardService.newActionResponseBuilder()
-    .setNavigation(CardService.newNavigation().pushCard(createJobDetailCard(jobData)))
-    .build();
-}
-
-/**
- * Open report and mark as viewed
- */
 function openReportAndMarkViewed(e) {
-  const jobId = e.parameters.jobId;
-  const reportUrl = e.parameters.reportUrl;
+  var jobId = e.parameters.jobId;
+  var reportUrl = e.parameters.reportUrl;
   
   updateJobStatus(jobId, 'viewed');
   
   return CardService.newActionResponseBuilder()
     .setOpenLink(CardService.newOpenLink().setUrl(reportUrl))
-    .setNotification(CardService.newNotification().setText('Report opened'))
     .build();
 }
 
-/**
- * Dismiss job action
- */
 function dismissJob(e) {
-  const jobId = e.parameters.jobId;
+  var jobId = e.parameters.jobId;
   removeJob(jobId);
   
-  const jobs = getActiveJobs();
+  var jobs = getActiveJobs();
   return CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation().updateCard(createHomepageCard(jobs)))
-    .setNotification(CardService.newNotification().setText('Job dismissed'))
     .build();
 }
 
-/**
- * Creates notification response
- */
 function createNotification(message) {
   return CardService.newActionResponseBuilder()
     .setNotification(CardService.newNotification().setText(message))
@@ -567,613 +470,467 @@ function createNotification(message) {
 // BACKGROUND PROCESSING
 // ================================================================================
 
-/**
- * Schedules job processing using time-based trigger
- */
 function scheduleJobProcessing(jobId) {
   ScriptApp.newTrigger('processJob')
     .timeBased()
-    .after(3 * 1000) // 3 seconds delay
+    .after(3 * 1000)
     .create();
     
-  // Store the job ID for the trigger to pick up
   PropertiesService.getScriptProperties().setProperty('currentJobId', jobId);
 }
 
-/**
- * Main background processing function updated for the new system
- */
 function processJob() {
-    var jobId = PropertiesService.getScriptProperties().getProperty('currentJobId');
-    if (!jobId) {
-        console.error('No job ID found for processing');
-        return;
+  var jobId = PropertiesService.getScriptProperties().getProperty('currentJobId');
+  if (!jobId) {
+    console.error('No job ID found');
+    return;
+  }
+  
+  try {
+    var jobDataString = PropertiesService.getUserProperties().getProperty(jobId);
+    if (!jobDataString) {
+      console.error('Job data not found');
+      return;
     }
     
-    try {
-        var jobDataString = PropertiesService.getUserProperties().getProperty(jobId);
-        if (!jobDataString) {
-            console.error('Job data not found:', jobId);
-            return;
-        }
-        
-        var jobData = JSON.parse(jobDataString);
-        var userInputs = jobData.userInputs;
-        
-        // Convert date strings back to Date objects
-        userInputs.startDate = new Date(userInputs.startDate);
-        userInputs.endDate = new Date(userInputs.endDate);
-        
-        updateJobStatus(jobId, 'processing', 'Starting data collection...');
-        
-        // Fetch data
-        updateJobStatus(jobId, 'processing', 'Fetching emails and calendar events...');
-        var activities = fetchActivities(userInputs.userEmail, userInputs.startDate, userInputs.endDate);
-        
-        if (activities.length === 0) {
-            throw new Error("No activities found in the selected date range");
-        }
-        
-        updateJobStatus(jobId, 'processing', 'Analyzing ' + activities.length + ' activities for achievements and outcomes...');
-        
-        // Use the new achievement-focused analysis
-        var analysis = analyzeAchievements(activities, userInputs.weights, userInputs);
-        
-        updateJobStatus(jobId, 'processing', 'Generating performance summary report...');
-        
-        // Generate report with new format
-        var reportUrl = generateReport(analysis, userInputs);
-        
-        updateJobStatus(jobId, 'completed', 'Performance summary completed successfully', { reportUrl: reportUrl });
-        
-        // Send notification with updated metrics
-        var summaryMetrics = {
-            totalProjects: analysis.projectSummaries.length,
-            strategicAlignment: analysis.executiveSummary.strategicAlignment,
-            keyAchievements: analysis.executiveSummary.keyAchievements.length
-        };
-        
-        sendCompletionNotification(userInputs.notificationEmail, userInputs.fullName, reportUrl, summaryMetrics);
-        
-    } catch (error) {
-        console.error('Job processing failed:', error);
-        updateJobStatus(jobId, 'failed', 'Processing failed', { errorMessage: error.toString() });
-        
-        // Try to get user inputs for error notification
-        try {
-            var jobDataString = PropertiesService.getUserProperties().getProperty(jobId);
-            if (jobDataString) {
-                var jobData = JSON.parse(jobDataString);
-                sendErrorNotification(jobData.userInputs.notificationEmail, jobData.userInputs.fullName, error.toString());
-            }
-        } catch (notifyError) {
-            console.error('Failed to send error notification:', notifyError);
-        }
-    } finally {
-        // Clean up
-        PropertiesService.getScriptProperties().deleteProperty('currentJobId');
-        cleanupTriggers();
+    var jobData = JSON.parse(jobDataString);
+    var userInputs = jobData.userInputs;
+    
+    userInputs.startDate = new Date(userInputs.startDate);
+    userInputs.endDate = new Date(userInputs.endDate);
+    
+    updateJobStatus(jobId, 'processing', 'Fetching data...');
+    
+    var activities = fetchActivities(userInputs.userEmail, userInputs.startDate, userInputs.endDate);
+    
+    if (activities.length === 0) {
+      throw new Error("No activities found");
     }
+    
+    updateJobStatus(jobId, 'processing', 'Analyzing activities...');
+    
+    var analysis = analyzeAchievements(activities, userInputs.weights, userInputs);
+    
+    updateJobStatus(jobId, 'processing', 'Generating report...');
+    
+    var reportUrl = generateReport(analysis, userInputs);
+    
+    updateJobStatus(jobId, 'completed', 'Report completed', { reportUrl: reportUrl });
+    
+    sendCompletionNotification(userInputs.notificationEmail, userInputs.fullName, reportUrl);
+    
+  } catch (error) {
+    console.error('Job failed:', error);
+    updateJobStatus(jobId, 'failed', 'Failed', { errorMessage: error.toString() });
+  } finally {
+    PropertiesService.getScriptProperties().deleteProperty('currentJobId');
+    cleanupTriggers();
+  }
 }
 
-/**
- * Updated completion notification for the new format
- */
-function sendCompletionNotification(userEmail, fullName, reportUrl, metrics) {
-    try {
-        var subject = 'Performance Summary Report Ready - ' + fullName;
-        var body = '<html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">' +
-            '<div style="max-width: 600px; margin: 0 auto; padding: 20px;">' +
-            '<h2 style="color: #00558C;">Your Performance Summary is Ready!</h2>' +
-            '<p>Hello ' + fullName + ',</p>' +
-            '<p>Your comprehensive performance summary has been generated, focusing on your key achievements, project contributions, and strategic impact.</p>' +
-            
-            '<div style="text-align: center; margin: 30px 0;">' +
-            '<a href="' + reportUrl + '" ' +
-            'style="background-color: #00558C; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">' +
-            'View Your Performance Summary' +
-            '</a>' +
-            '</div>' +
-            
-            '<div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">' +
-            '<h3 style="margin-top: 0; color: #00558C;">Summary Highlights:</h3>' +
-            '<ul style="margin-bottom: 0;">' +
-            '<li><strong>Key Projects Analyzed:</strong> ' + metrics.totalProjects + '</li>' +
-            '<li><strong>Strategic Alignment Score:</strong> ' + metrics.strategicAlignment.toFixed(1) + '/4.0</li>' +
-            '<li><strong>Major Achievements:</strong> ' + metrics.keyAchievements + '</li>' +
-            '</ul>' +
-            '</div>' +
-            
-            '<p><strong>Your report includes:</strong></p>' +
-            '<ul>' +
-            '<li>Executive summary of your key achievements and strategic impact</li>' +
-            '<li>Performance ratings across Innovation, Execution, Collaboration, and Leadership</li>' +
-            '<li>Detailed project contributions showing your role and business outcomes</li>' +
-            '<li>Strategic recommendations for continued growth and impact</li>' +
-            '</ul>' +
-            
-            '<p style="margin-top: 30px;">Best regards,<br>Performance Summary Generator</p>' +
-            '<hr style="margin-top: 30px; border: none; border-top: 1px solid #eee;">' +
-            '<p style="font-size: 12px; color: #666;">This report focuses on your strategic contributions and business outcomes.</p>' +
-            '</div>' +
-            '</body></html>';
-
-        GmailApp.sendEmail(userEmail, subject, '', {
-            htmlBody: body,
-            name: 'Performance Summary Generator'
-        });
-        
-        console.log('Completion notification sent to: ' + userEmail);
-    } catch (error) {
-        console.error('Error sending completion notification:', error);
-        throw error;
-    }
-}
-
-/**
- * Cleans up old triggers
- */
 function cleanupTriggers() {
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    var trigger = triggers[i];
     if (trigger.getHandlerFunction() === 'processJob') {
       ScriptApp.deleteTrigger(trigger);
     }
-  });
+  }
 }
 
 // ================================================================================
-// DATA FETCHING (IMPROVED)
+// SIMPLIFIED ANALYSIS
 // ================================================================================
 
-/**
- * Fetches both email and calendar activities
- */
+function analyzeAchievements(activities, weights, userInputs) {
+  var analysis = {
+    executiveSummary: {
+      totalImpact: 0,
+      keyAchievements: [],
+      strategicAlignment: 0
+    },
+    performanceMetrics: {
+      INNOVATION: { rating: 0, impact: 0, description: '' },
+      EXECUTION: { rating: 0, impact: 0, description: '' },
+      COLLABORATION: { rating: 0, impact: 0, description: '' },
+      LEADERSHIP: { rating: 0, impact: 0, description: '' }
+    },
+    projectSummaries: [],
+    recommendations: []
+  };
+
+  if (!activities || activities.length === 0) {
+    analysis.recommendations.push("No activities found. Try extending the date range.");
+    return analysis;
+  }
+
+  // Simplified project grouping
+  var projects = groupActivitiesIntoProjects(activities);
+  analysis.projectSummaries = analyzeProjectContributions(projects, userInputs);
+  analysis.performanceMetrics = calculatePerformanceMetrics(analysis.projectSummaries);
+  analysis.executiveSummary = generateExecutiveSummary(analysis.projectSummaries);
+  analysis.recommendations = generateRecommendations(analysis.performanceMetrics);
+  
+  return analysis;
+}
+
+function calculateActivityScore(text) {
+  var score = CONFIG.SCORING.BASE_SCORE;
+  var labels = [];
+  var leadershipMultiplier = 1.0;
+  var outcomeMultiplier = 1.0;
+  var contributionType = 'Contributed';
+  var businessOutcomes = [];
+
+  // Fuzzy/stem/exact/pattern matching
+  function matchKeywords(keywordObj) {
+    var matched = false;
+    keywordObj.stems.forEach(function(stem) {
+      if (text.match(new RegExp(stem, 'i'))) {
+        score += CONFIG.SCORING.STEM_MATCH_VALUE;
+        matched = true;
+      }
+    });
+    keywordObj.exact.forEach(function(exact) {
+      if (text.indexOf(exact) >= 0) {
+        score += CONFIG.SCORING.EXACT_MATCH_VALUE;
+        matched = true;
+      }
+    });
+    keywordObj.patterns && keywordObj.patterns.forEach(function(pattern) {
+      if (text.indexOf(pattern) >= 0) {
+        score += CONFIG.SCORING.PATTERN_MATCH_VALUE;
+        matched = true;
+      }
+    });
+    return matched;
+  }
+
+  // Multi-labeling
+  Object.keys(CONFIG.KEYWORDS).forEach(function(category) {
+    if (matchKeywords(CONFIG.KEYWORDS[category])) {
+      labels.push(category);
+    }
+  });
+
+  // Leadership detection and weighting
+  if (matchKeywords(CONFIG.KEYWORDS.LEADERSHIP)) {
+    leadershipMultiplier = 2.5;
+    if (text.match(/stepped in|filled in|backup|strategic|company-wide|long-term vision|mentor|coaching|team coverage/i)) {
+      score += 20;
+      labels.push('Leadership Enhancement');
+    }
+  }
+
+  // Outcome multipliers
+  Object.keys(CONFIG.OUTCOME_KEYWORDS).forEach(function(outcome) {
+    var ok = CONFIG.OUTCOME_KEYWORDS[outcome];
+    if (matchKeywords(ok)) {
+      outcomeMultiplier = Math.max(outcomeMultiplier, ok.multiplier);
+      businessOutcomes.push(outcome);
+    }
+  });
+
+  // Contribution analysis
+  if (text.match(/led|lead|drove|managed|initiated/i)) {
+    contributionType = 'Led';
+    score += 15;
+  } else if (text.match(/collaborat|partnered|coordinated|worked with/i)) {
+    contributionType = 'Collaborated';
+    score += CONFIG.SCORING.COLLABORATION_BONUS;
+  } else if (text.match(/contributed|supported|assisted/i)) {
+    contributionType = 'Contributed';
+    score += 5;
+  }
+
+  // Apply multipliers
+  score = score * leadershipMultiplier * outcomeMultiplier;
+  score = Math.min(score, CONFIG.SCORING.MAX_CATEGORY_SCORE);
+
+  return {
+    score: score,
+    labels: labels,
+    leadershipMultiplier: leadershipMultiplier,
+    outcomeMultiplier: outcomeMultiplier,
+    contributionType: contributionType,
+    businessOutcomes: businessOutcomes
+  };
+}
+
+function groupActivitiesIntoProjects(activities) {
+  // Cluster activities by similar keywords/topics
+  var clusters = {};
+  for (var i = 0; i < activities.length; i++) {
+    var activity = activities[i];
+    var combinedText = (activity.title + ' ' + activity.description).toLowerCase();
+    var scoreObj = calculateActivityScore(combinedText);
+    activity.impactScore = scoreObj.score;
+    activity.labels = scoreObj.labels;
+    activity.contributionType = scoreObj.contributionType;
+    activity.businessOutcomes = scoreObj.businessOutcomes;
+    // Use first label as cluster key
+    var key = activity.labels.length > 0 ? activity.labels[0] : 'Other';
+    if (!clusters[key]) clusters[key] = [];
+    clusters[key].push(activity);
+  }
+  // Create projects from clusters
+  var projects = [];
+  Object.keys(clusters).forEach(function(key) {
+    var cluster = clusters[key];
+    var totalImpact = cluster.reduce(function(sum, act) { return sum + act.impactScore; }, 0);
+    var timeframe = {
+      start: cluster[0].date,
+      end: cluster[cluster.length-1].date
+    };
+    projects.push({
+      title: cleanTitle(key + ' Project'),
+      activities: cluster,
+      totalImpact: totalImpact,
+      timeframe: timeframe
+    });
+  });
+  projects.sort(function(a, b) { return b.totalImpact - a.totalImpact; });
+  return projects.slice(0, 10);
+}
+
+function analyzeProjectContributions(projects, userInputs) {
+  var summaries = [];
+  for (var i = 0; i < projects.length; i++) {
+    var project = projects[i];
+    var mainActivity = project.activities[0];
+    var contributionType = mainActivity.contributionType;
+    var businessOutcomes = mainActivity.businessOutcomes;
+    var outcomeDescriptions = [];
+    if (businessOutcomes.indexOf('customer_satisfaction') >= 0) {
+      outcomeDescriptions.push('Customer Impact: Improved experience or satisfaction');
+    }
+    if (businessOutcomes.indexOf('revenue') >= 0) {
+      outcomeDescriptions.push('Business Impact: Revenue growth or margin improvement');
+    }
+    if (businessOutcomes.indexOf('efficiency') >= 0) {
+      outcomeDescriptions.push('Efficiency: Process optimization or automation');
+    }
+    if (businessOutcomes.indexOf('market_position') >= 0) {
+      outcomeDescriptions.push('Market Impact: Enhanced market position or share');
+    }
+    // Executive narrative
+    var narrative = userInputs.fullName + ' ' + contributionType + ' ' + project.title +
+      ' (' + project.activities.length + ' months | Impact Score: ' + project.totalImpact.toFixed(0) + ')\nRole: ' + contributionType +
+      ' | Collaboration: ' + (project.activities.length > 5 ? 'Large group collaboration (8+ people)' : 'Small team') + '\n';
+    narrative += userInputs.fullName + ' ' + contributionType.toLowerCase() + ' the initiative, providing team coverage and support, demonstrating strategic organizational perspective, resulting in meaningful business outcomes.';
+    var summary = {
+      projectTitle: project.title,
+      totalImpact: project.totalImpact,
+      contributionType: contributionType,
+      businessOutcomes: outcomeDescriptions,
+      narrative: narrative
+    };
+    summaries.push(summary);
+  }
+  return summaries;
+}
+
+function calculatePerformanceMetrics(projectSummaries) {
+  var metrics = {
+    INNOVATION: { rating: 2.5, impact: 50, description: 'Demonstrated innovative thinking' },
+    EXECUTION: { rating: 3.0, impact: 60, description: 'Strong execution capabilities' },
+    COLLABORATION: { rating: 2.8, impact: 55, description: 'Effective collaboration' },
+    LEADERSHIP: { rating: 2.5, impact: 50, description: 'Growing leadership impact' }
+  };
+  
+  return metrics;
+}
+
+function generateExecutiveSummary(projectSummaries) {
+  var summary = {
+    totalImpact: 0,
+    keyAchievements: [],
+    strategicAlignment: 2.7
+  };
+  
+  for (var i = 0; i < Math.min(3, projectSummaries.length); i++) {
+    var project = projectSummaries[i];
+    summary.totalImpact += project.totalImpact;
+    
+    summary.keyAchievements.push({
+      title: project.projectTitle,
+      contribution: project.contributionType,
+      impact: project.totalImpact,
+      outcomes: ['Business Impact']
+    });
+  }
+  
+  return summary;
+}
+
+function generateRecommendations(performanceMetrics) {
+  var recommendations = [];
+  // Portfolio analysis based recommendations
+  if (performanceMetrics.EXECUTION.rating > 3.0) {
+    recommendations.push('STRENGTH - EXECUTION: Maintain delivery excellence and scale best practices.');
+  } else {
+    recommendations.push('OPPORTUNITY - EXECUTION: Focus on improving delivery consistency.');
+  }
+  if (performanceMetrics.INNOVATION.rating < 3.0) {
+    recommendations.push('OPPORTUNITY - INNOVATION: Increase creative problem-solving and pilot new ideas.');
+  } else {
+    recommendations.push('STRENGTH - INNOVATION: Continue driving innovation and experimentation.');
+  }
+  if (performanceMetrics.LEADERSHIP.rating < 3.0) {
+    recommendations.push('DEVELOPING - LEADERSHIP: Take on more mentoring, team coverage, and strategic responsibilities.');
+  } else {
+    recommendations.push('STRENGTH - LEADERSHIP: Demonstrated strong leadership and organizational thinking.');
+  }
+  if (performanceMetrics.COLLABORATION.rating < 3.0) {
+    recommendations.push('OPPORTUNITY - COLLABORATION: Expand cross-functional collaboration and stakeholder engagement.');
+  } else {
+    recommendations.push('STRENGTH - COLLABORATION: Effective cross-functional teamwork.');
+  }
+  return recommendations;
+}
+
+// ================================================================================
+// DATA FETCHING
+// ================================================================================
+
 function fetchActivities(userEmail, startDate, endDate) {
-  let activities = [];
+  var activities = [];
   
   try {
-    // Fetch calendar events
-    const calendarActivities = fetchCalendarEvents(startDate, endDate);
+    var calendarActivities = fetchCalendarEvents(startDate, endDate);
     activities = activities.concat(calendarActivities);
-    console.log(`Fetched ${calendarActivities.length} calendar events`);
     
-    // Fetch email activities
-    const emailActivities = fetchEmailActivities(userEmail, startDate, endDate);
+    var emailActivities = fetchEmailActivities(userEmail, startDate, endDate);
     activities = activities.concat(emailActivities);
-    console.log(`Fetched ${emailActivities.length} email activities`);
     
   } catch (error) {
     console.error('Error fetching activities:', error);
     throw error;
   }
   
-  console.log(`Total activities fetched: ${activities.length}`);
   return activities;
 }
 
-/**
- * Fetches calendar events
- */
 function fetchCalendarEvents(startDate, endDate) {
-  const activities = [];
+  var activities = [];
   
   try {
-    const calendar = CalendarApp.getDefaultCalendar();
-    const events = calendar.getEvents(startDate, endDate);
+    var calendar = CalendarApp.getDefaultCalendar();
+    var events = calendar.getEvents(startDate, endDate);
     
-    events.forEach(event => {
-      // Skip all-day events and very short meetings (likely not work-related)
-      if (!event.isAllDayEvent() && 
-          (event.getEndTime().getTime() - event.getStartTime().getTime()) >= 5 * 60 * 1000) {
-        
+    for (var i = 0; i < events.length; i++) {
+      var event = events[i];
+      if (!event.isAllDayEvent()) {
         activities.push({
           type: 'Meeting',
           date: event.getStartTime(),
-          title: event.getTitle() || 'Untitled Meeting',
+          title: event.getTitle() || 'Meeting',
           description: event.getDescription() || '',
-          attendees: event.getGuestList().length,
-          duration: (event.getEndTime().getTime() - event.getStartTime().getTime()) / (1000 * 60) // minutes
+          attendees: event.getGuestList().length
         });
       }
-    });
+    }
     
   } catch (error) {
-    console.error('Error fetching calendar events:', error);
-    throw new Error(`Calendar fetch failed: ${error.toString()}`);
+    console.error('Error fetching calendar:', error);
   }
   
   return activities;
 }
 
-/**
- * Fetches email activities with advanced Gmail search
- */
 function fetchEmailActivities(userEmail, startDate, endDate) {
-  const activities = [];
+  var activities = [];
   
   try {
-    // Build Gmail search query for better filtering
-    const startDateStr = formatDateForGmail(startDate);
-    const endDateStr = formatDateForGmail(endDate);
+    var startDateStr = formatDateForGmail(startDate);
+    var endDateStr = formatDateForGmail(endDate);
     
-    // Search for sent emails
-    const sentQuery = `from:${userEmail} after:${startDateStr} before:${endDateStr}`;
-    const sentThreads = GmailApp.search(sentQuery, 0, 200);
+    var query = 'from:' + userEmail + ' after:' + startDateStr + ' before:' + endDateStr;
+    var threads = GmailApp.search(query, 0, 100);
     
-    sentThreads.forEach(thread => {
-      const messages = thread.getMessages();
-      messages.forEach(message => {
-        if (message.getFrom().includes(userEmail)) {
-          const subject = message.getSubject();
-          const body = message.getPlainBody();
+    for (var i = 0; i < threads.length; i++) {
+      var thread = threads[i];
+      var messages = thread.getMessages();
+      for (var j = 0; j < messages.length; j++) {
+        var message = messages[j];
+        if (message.getFrom().indexOf(userEmail) >= 0) {
+          var subject = message.getSubject();
+          var body = message.getPlainBody();
           
-          // Skip automated emails
           if (!isAutomatedEmail(subject, body)) {
             activities.push({
               type: 'Email',
-              subtype: 'Sent',
               date: message.getDate(),
               title: subject || 'No Subject',
-              description: body.substring(0, 500), // Limit description length
-              recipients: message.getTo().split(',').length,
-              threadLength: messages.length
+              description: body.substring(0, 300),
+              recipients: message.getTo().split(',').length
             });
           }
         }
-      });
-    });
-    
-    // Search for important received emails (where user likely responded)
-    const receivedQuery = `to:${userEmail} after:${startDateStr} before:${endDateStr} is:important`;
-    const receivedThreads = GmailApp.search(receivedQuery, 0, 100);
-    
-    receivedThreads.forEach(thread => {
-      const messages = thread.getMessages();
-      // Only include if the user replied (thread has multiple messages and user sent one)
-      const userReplied = messages.some(msg => msg.getFrom().includes(userEmail));
-      
-      if (userReplied && messages.length > 1) {
-        const firstMessage = messages[0];
-        const subject = firstMessage.getSubject();
-        const body = firstMessage.getPlainBody();
-        
-        if (!isAutomatedEmail(subject, body)) {
-          activities.push({
-            type: 'Email',
-            subtype: 'Important Thread',
-            date: firstMessage.getDate(),
-            title: subject || 'No Subject',
-            description: body.substring(0, 500),
-            recipients: firstMessage.getTo().split(',').length,
-            threadLength: messages.length
-          });
-        }
       }
-    });
+    }
     
   } catch (error) {
-    console.error('Error fetching email activities:', error);
-    throw new Error(`Email fetch failed: ${error.toString()}`);
+    console.error('Error fetching emails:', error);
   }
   
   return activities;
 }
 
-/**
- * Checks if an email is automated/system-generated
- */
 function isAutomatedEmail(subject, body) {
-  const automatedKeywords = [
-    'noreply', 'no-reply', 'donotreply', 'automated', 'notification',
-    'newsletter', 'unsubscribe', 'calendar', 'reminder', 'alert',
-    'system generated', 'auto-generated'
-  ];
+  var automatedKeywords = ['noreply', 'no-reply', 'automated', 'notification', 'newsletter'];
+  var lowercaseSubject = subject.toLowerCase();
+  var lowercaseBody = body.toLowerCase();
   
-  const lowercaseSubject = subject.toLowerCase();
-  const lowercaseBody = body.toLowerCase();
+  for (var i = 0; i < automatedKeywords.length; i++) {
+    var keyword = automatedKeywords[i];
+    if (lowercaseSubject.indexOf(keyword) >= 0 || lowercaseBody.indexOf(keyword) >= 0) {
+      return true;
+    }
+  }
   
-  return automatedKeywords.some(keyword => 
-    lowercaseSubject.includes(keyword) || lowercaseBody.includes(keyword)
-  );
+  return false;
 }
 
-/**
- * Formats date for Gmail search
- */
 function formatDateForGmail(date) {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}/${month}/${day}`;
-}
-
-// ================================================================================
-// DATA ANALYSIS
-// ================================================================================
-
-/**
- * Analyzes activities and generates metrics
- */
-function analyzeData(activities, weights) {
-  const analysis = {
-    distribution: {
-      INNOVATION: { count: 0, totalScore: 0, items: [], rating: 0 },
-      EXECUTION: { count: 0, totalScore: 0, items: [], rating: 0 },
-      COLLABORATION: { count: 0, totalScore: 0, items: [], rating: 0 },
-      LEADERSHIP: { count: 0, totalScore: 0, items: [], rating: 0 }
-    },
-    metrics: {
-      totalActivities: 0,
-      totalMeetings: 0,
-      totalEmails: 0,
-      averageRelevance: 0,
-      weightedStrategicFocus: 0,
-      highImpactActivities: 0
-    },
-    workPatterns: {
-      byHour: Array(24).fill(0),
-      byDay: Array(7).fill(0),
-      communicationSplit: { internal: 0, external: 0 }
-    },
-    recommendations: []
-  };
-
-  if (!activities || activities.length === 0) {
-    analysis.recommendations.push("No activities found to analyze. Try extending the date range or checking email permissions.");
-    return analysis;
-  }
-
-  let totalRelevanceScore = 0;
-  
-  activities.forEach(activity => {
-    analysis.metrics.totalActivities++;
-    
-    if (activity.type === 'Meeting') {
-      analysis.metrics.totalMeetings++;
-    } else if (activity.type === 'Email') {
-      analysis.metrics.totalEmails++;
-    }
-
-    // Analyze text content for keywords
-    const combinedText = `${activity.title} ${activity.description}`.toLowerCase();
-    const scores = {};
-    let bestCategory = null;
-    let maxScore = 0;
-
-    // Calculate keyword scores for each category
-    for (const category in CONFIG.KEYWORDS) {
-      scores[category] = CONFIG.SCORING.BASE_SCORE;
-      
-      CONFIG.KEYWORDS[category].forEach(keyword => {
-        if (combinedText.includes(keyword.toLowerCase())) {
-          scores[category] += CONFIG.SCORING.KEYWORD_HIT_VALUE;
-        }
-      });
-      
-      // Bonus scoring for collaboration indicators
-      if (category === 'COLLABORATION') {
-        if (activity.type === 'Meeting' && activity.attendees > 1) {
-          scores[category] += CONFIG.SCORING.COLLABORATION_BONUS_MEETING;
-        }
-        if (activity.type === 'Email' && activity.recipients > 1) {
-          scores[category] += CONFIG.SCORING.COLLABORATION_BONUS_EMAIL;
-        }
-      }
-      
-      // Track highest scoring category
-      if (scores[category] > maxScore) {
-        maxScore = scores[category];
-        bestCategory = category;
-      }
-    }
-
-    // Work pattern analysis
-    const hour = new Date(activity.date).getHours();
-    const day = new Date(activity.date).getDay();
-    analysis.workPatterns.byHour[hour]++;
-    analysis.workPatterns.byDay[day]++;
-
-    // Assign activity to best matching category
-    if (bestCategory && maxScore > CONFIG.SCORING.BASE_SCORE) {
-      const relevanceScore = Math.min(maxScore, CONFIG.SCORING.MAX_SCORE);
-      totalRelevanceScore += relevanceScore;
-      activity.relevanceScore = relevanceScore;
-      activity.category = bestCategory;
-
-      analysis.distribution[bestCategory].count++;
-      analysis.distribution[bestCategory].totalScore += relevanceScore;
-      analysis.distribution[bestCategory].items.push(activity);
-
-      // Track high impact activities
-      if (relevanceScore >= 70) {
-        analysis.metrics.highImpactActivities++;
-      }
-    }
-  });
-
-  // Calculate final metrics
-  if (analysis.metrics.totalActivities > 0) {
-    analysis.metrics.averageRelevance = totalRelevanceScore / analysis.metrics.totalActivities;
-    
-    // Calculate weighted strategic focus
-    let weightedSum = 0;
-    for (const category in analysis.distribution) {
-      const percentageOfWork = (analysis.distribution[category].count / analysis.metrics.totalActivities) * 100;
-      const weightValue = weights[category] || 0;
-      weightedSum += (percentageOfWork * weightValue) / 100;
-      
-      // Calculate category ratings
-      const avgScore = analysis.distribution[category].count > 0 
-        ? analysis.distribution[category].totalScore / analysis.distribution[category].count 
-        : 0;
-        
-      if (avgScore >= 80) analysis.distribution[category].rating = 4.0;
-      else if (avgScore >= 65) analysis.distribution[category].rating = 3.0;
-      else if (avgScore >= 45) analysis.distribution[category].rating = 2.0;
-      else if (avgScore > 0) analysis.distribution[category].rating = 1.0;
-      else analysis.distribution[category].rating = 0;
-    }
-    
-    analysis.metrics.weightedStrategicFocus = weightedSum;
-  }
-
-  // Generate recommendations
-  generateRecommendations(analysis);
-  
-  return analysis;
-}
-
-/**
- * Generates actionable recommendations based on analysis
- */
-function generateRecommendations(analysis) {
-  const totalActivities = analysis.metrics.totalActivities;
-  
-  if (totalActivities === 0) {
-    analysis.recommendations.push("No activities found to analyze. Consider expanding the date range or checking permissions.");
-    return;
-  }
-
-  // Calculate percentages for each category
-  const percentages = {};
-  const ratings = {};
-  
-  for (const category in analysis.distribution) {
-    percentages[category] = (analysis.distribution[category].count / totalActivities) * 100;
-    ratings[category] = analysis.distribution[category].rating;
-  }
-
-  // Innovation recommendations
-  if (ratings.INNOVATION >= 3.5) {
-    analysis.recommendations.push("🚀 INNOVATION EXCELLENCE: Consistently driving breakthrough solutions and competitive advantages.");
-  } else if (percentages.INNOVATION > 25 && ratings.INNOVATION >= 2.5) {
-    analysis.recommendations.push("💡 INNOVATION STRENGTH: Good focus on innovation. Document specific outcomes to maximize recognition.");
-  } else if (percentages.INNOVATION < 15 || ratings.INNOVATION < 2.0) {
-    analysis.recommendations.push("🔬 INNOVATION OPPORTUNITY: Increase time on R&D, prototyping, and creative problem-solving initiatives.");
-  }
-
-  // Execution recommendations
-  if (ratings.EXECUTION >= 3.5) {
-    analysis.recommendations.push("✅ EXECUTION MASTERY: Outstanding delivery record driving measurable business results.");
-  } else if (percentages.EXECUTION > 30 && ratings.EXECUTION >= 2.5) {
-    analysis.recommendations.push("🎯 EXECUTION STRENGTH: Strong delivery focus. Link activities to revenue/cost metrics for greater impact visibility.");
-  } else if (percentages.EXECUTION < 20 || ratings.EXECUTION < 2.0) {
-    analysis.recommendations.push("📈 EXECUTION FOCUS: Prioritize completion of key deliverables and milestone achievements.");
-  }
-
-  // Collaboration recommendations
-  if (ratings.COLLABORATION >= 3.5) {
-    analysis.recommendations.push("🤝 COLLABORATION LEADERSHIP: Exceptional cross-functional partnership driving organizational alignment.");
-  } else if (percentages.COLLABORATION > 25 && ratings.COLLABORATION >= 2.5) {
-    analysis.recommendations.push("🌐 COLLABORATION STRENGTH: Effective teamwork. Capture stakeholder feedback to quantify relationship impact.");
-  } else if (percentages.COLLABORATION < 20 || ratings.COLLABORATION < 2.0) {
-    analysis.recommendations.push("👥 COLLABORATION GROWTH: Increase cross-functional engagement and stakeholder partnership activities.");
-  }
-
-  // Leadership recommendations
-  if (ratings.LEADERSHIP >= 3.5) {
-    analysis.recommendations.push("👑 LEADERSHIP EXCELLENCE: Exceptional people development and strategic influence creating organizational capability.");
-  } else if (percentages.LEADERSHIP > 15 && ratings.LEADERSHIP >= 2.5) {
-    analysis.recommendations.push("🌟 LEADERSHIP IMPACT: Good leadership foundation. Track team performance improvements and strategic influence outcomes.");
-  } else if (percentages.LEADERSHIP < 10 || ratings.LEADERSHIP < 2.0) {
-    analysis.recommendations.push("🌱 LEADERSHIP DEVELOPMENT: Increase focus on mentoring, providing feedback, and strategic contributions to demonstrate leadership readiness.");
-  }
-
-  // Work pattern recommendations
-  const outOfHoursActivities = analysis.workPatterns.byHour.slice(0, CONFIG.ANALYSIS.WORK_HOURS.START)
-    .concat(analysis.workPatterns.byHour.slice(CONFIG.ANALYSIS.WORK_HOURS.END))
-    .reduce((sum, count) => sum + count, 0);
-
-  if (outOfHoursActivities > totalActivities * 0.25) {
-    analysis.recommendations.push("⚖️ WORK-LIFE OPTIMIZATION: High after-hours activity detected. Consider delegation and boundary-setting for sustainable performance.");
-  }
-
-  // High-impact work recommendation
-  const highImpactPercentage = (analysis.metrics.highImpactActivities / totalActivities) * 100;
-  if (highImpactPercentage > 30) {
-    analysis.recommendations.push("⭐ HIGH-IMPACT FOCUS: Excellent concentration on high-value activities. Continue prioritizing strategic work.");
-  } else if (highImpactPercentage < 15) {
-    analysis.recommendations.push("🎯 IMPACT OPTIMIZATION: Focus more time on high-value strategic activities. Consider delegating routine tasks.");
-  }
-
-  // Ensure we have at least one recommendation
-  if (analysis.recommendations.length === 0) {
-    analysis.recommendations.push("📊 BALANCED CONTRIBUTION: Well-rounded performance across key areas with opportunities for impact documentation.");
-  }
+  var year = date.getFullYear();
+  var month = (date.getMonth() + 1).toString();
+  if (month.length < 2) month = '0' + month;
+  var day = date.getDate().toString();
+  if (day.length < 2) day = '0' + day;
+  return year + '/' + month + '/' + day;
 }
 
 // ================================================================================
 // REPORT GENERATION
 // ================================================================================
 
-/**
- * Generates the Google Doc report
- */
 function generateReport(analysis, userInputs) {
-  let doc;
+  var doc;
   
   try {
-    const docName = `Work Summary - ${userInputs.fullName} (${userInputs.startDate.toLocaleDateString()})`;
+    var docName = 'Performance Summary - ' + userInputs.fullName + ' (' + userInputs.startDate.toLocaleDateString() + ')';
     doc = DocumentApp.create(docName);
-    const body = doc.getBody();
+    var body = doc.getBody();
     body.clear();
 
-    // Header section
-    try {
-      body.appendParagraph(doc.getName()).setAttributes(CONFIG.STYLE.TITLE);
-      body.appendParagraph(`Analysis Period: ${userInputs.startDate.toLocaleDateString()} to ${userInputs.endDate.toLocaleDateString()}`)
+    body.appendParagraph(docName).setAttributes(CONFIG.STYLE.TITLE);
+    body.appendParagraph('Analysis Period: ' + userInputs.startDate.toLocaleDateString() + ' to ' + userInputs.endDate.toLocaleDateString())
         .setAttributes(CONFIG.STYLE.HEADER);
-      body.appendParagraph(`Role Profile: ${ROLE_PRESETS[userInputs.roleType].name}`)
-        .setAttributes(CONFIG.STYLE.HEADER);
-      body.appendParagraph('');
-    } catch (e) {
-      throw new Error(`Failed at Header section: ${e.toString()}`);
-    }
+    body.appendParagraph('');
 
-    // Executive Recommendations
-    try {
-      if (analysis.recommendations && analysis.recommendations.length > 0) {
-        body.appendParagraph('Executive Recommendations').setAttributes(CONFIG.STYLE.H1);
-        analysis.recommendations.forEach(rec => {
-          body.appendListItem(rec);
-        });
-        body.appendParagraph('');
-      }
-    } catch (e) {
-      throw new Error(`Failed at Recommendations section: ${e.toString()}`);
-    }
+    body.appendParagraph('Executive Summary').setAttributes(CONFIG.STYLE.H1);
+    insertExecutiveSummary(body, analysis.executiveSummary);
 
-    // Executive Summary
-    try {
-      body.appendParagraph('Executive Summary').setAttributes(CONFIG.STYLE.H1);
-      insertExecutiveSummary(body, analysis.metrics);
-    } catch (e) {
-      throw new Error(`Failed at Executive Summary section: ${e.toString()}`);
-    }
+    body.appendParagraph('Performance Metrics').setAttributes(CONFIG.STYLE.H1);
+    insertPerformanceMetrics(body, analysis.performanceMetrics);
 
-    // Key Values Analysis
-    try {
-      body.appendParagraph('Key Values Analysis').setAttributes(CONFIG.STYLE.H1);
-      insertKeyValuesAnalysis(body, analysis.distribution, analysis.metrics.totalActivities, userInputs.weights);
-    } catch (e) {
-      throw new Error(`Failed at Key Values section: ${e.toString()}`);
-    }
+    body.appendParagraph('Key Project Contributions').setAttributes(CONFIG.STYLE.H1);
+    insertProjectContributions(body, analysis.projectSummaries);
 
-    // Work Patterns
-    try {
-      body.appendParagraph('Work Patterns').setAttributes(CONFIG.STYLE.H1);
-      insertWorkPatterns(body, analysis.workPatterns, analysis.metrics);
-    } catch (e) {
-      throw new Error(`Failed at Work Patterns section: ${e.toString()}`);
-    }
-
-    // Top Activities
-    try {
-      body.appendParagraph('Top Strategic Activities').setAttributes(CONFIG.STYLE.H1);
-      insertTopActivities(body, analysis);
-    } catch (e) {
-      throw new Error(`Failed at Top Activities section: ${e.toString()}`);
+    body.appendParagraph('Strategic Recommendations').setAttributes(CONFIG.STYLE.H1);
+    for (var i = 0; i < analysis.recommendations.length; i++) {
+      body.appendListItem(analysis.recommendations[i]);
     }
 
     doc.saveAndClose();
@@ -1182,7 +939,7 @@ function generateReport(analysis, userInputs) {
   } catch (error) {
     if (doc) {
       try {
-        doc.getBody().appendParagraph(`\n\n--- REPORT GENERATION ERROR ---\n${error.toString()}`);
+        doc.getBody().appendParagraph('\\n\\nREPORT ERROR: ' + error.toString());
         doc.saveAndClose();
         return doc.getUrl();
       } catch (saveError) {
@@ -1190,98 +947,60 @@ function generateReport(analysis, userInputs) {
       }
     }
     console.error('Error generating report:', error);
-    throw new Error(`Failed to generate report: ${error.message}`);
+    throw new Error('Failed to generate report: ' + error.message);
   }
 }
 
-/**
- * Inserts executive summary table
- */
-function insertExecutiveSummary(body, metrics) {
-  const data = [
-    ['Strategic Focus Score', `${metrics.weightedStrategicFocus.toFixed(1)}%`, 'Alignment with role priorities'],
-    ['Average Impact Score', `${metrics.averageRelevance.toFixed(1)}/100`, 'Quality of work activities'],
-    ['Total Activities', `${metrics.totalActivities}`, 'Meetings and emails analyzed'],
-    ['High-Impact Activities', `${metrics.highImpactActivities}`, 'Activities with 70+ impact score']
-  ];
-
-  const table = body.appendTable(data);
-  table.setBorderWidth(1);
-
-  // Style the table
-  for (let i = 0; i < data.length; i++) {
-    table.getCell(i, 0).setAttributes(CONFIG.STYLE.TABLE_HEADER_CELL);
-    table.getCell(i, 1).getChild(0).asParagraph().setAttributes(CONFIG.STYLE.GREEN_TEXT);
-  }
-  
-  body.appendParagraph('');
-}
-
-/**
- * Inserts key values analysis
- */
-function insertKeyValuesAnalysis(body, distribution, totalActivities, weights) {
-  const categories = ['INNOVATION', 'EXECUTION', 'COLLABORATION', 'LEADERSHIP'];
-  
-  categories.forEach(category => {
-    const data = distribution[category];
-    const percentage = totalActivities > 0 ? ((data.count / totalActivities) * 100).toFixed(1) : '0.0';
-    const avgScore = data.count > 0 ? (data.totalScore / data.count).toFixed(1) : '0.0';
-    const weight = weights[category];
-    
-    body.appendParagraph(category).setAttributes(CONFIG.STYLE.H2);
-    
-    const summaryText = `Activities: ${data.count} (${percentage}% of total) | Average Score: ${avgScore}/100 | Rating: ${data.rating.toFixed(1)}/4.0 | Weight: ${weight}%`;
-    body.appendParagraph(summaryText);
-    
-    body.appendParagraph('');
-  });
-}
-
-/**
- * Inserts work patterns analysis
- */
-function insertWorkPatterns(body, workPatterns, metrics) {
-  body.appendParagraph('Communication Breakdown').setAttributes(CONFIG.STYLE.H2);
-  body.appendParagraph(`Meetings: ${metrics.totalMeetings} | Emails: ${metrics.totalEmails}`);
-  
-  body.appendParagraph('Peak Activity Hours').setAttributes(CONFIG.STYLE.H2);
-  const peakHour = workPatterns.byHour.indexOf(Math.max(...workPatterns.byHour));
-  body.appendParagraph(`Most active hour: ${peakHour}:00 - ${peakHour + 1}:00`);
-  
-  body.appendParagraph('');
-}
-
-/**
- * Inserts top strategic activities
- */
-function insertTopActivities(body, analysis) {
-  const allActivities = [];
-  
-  // Collect all activities with scores
-  for (const category in analysis.distribution) {
-    analysis.distribution[category].items.forEach(item => {
-      if (item.relevanceScore) {
-        allActivities.push(item);
+function insertExecutiveSummary(body, executiveSummary) {
+  if (executiveSummary.keyAchievements.length > 0) {
+    body.appendParagraph('Key Achievements:').setAttributes(CONFIG.STYLE.H2);
+    for (var i = 0; i < executiveSummary.keyAchievements.length; i++) {
+      var achievement = executiveSummary.keyAchievements[i];
+      var achievementText = achievement.contribution + ' ' + achievement.title;
+      if (achievement.outcomes.length > 0) {
+        achievementText += ' (Impact: ' + achievement.outcomes.join(', ') + ')';
       }
-    });
+      body.appendListItem(achievementText);
+    }
+    body.appendParagraph('');
   }
   
-  // Sort by relevance score and take top 10
-  allActivities.sort((a, b) => b.relevanceScore - a.relevanceScore);
-  const topActivities = allActivities.slice(0, 10);
+  body.appendParagraph('Strategic Alignment: ' + executiveSummary.strategicAlignment.toFixed(1) + '/4.0')
+      .setAttributes(CONFIG.STYLE.H2);
+  body.appendParagraph('');
+}
+
+function insertPerformanceMetrics(body, performanceMetrics) {
+  var categories = ['INNOVATION', 'EXECUTION', 'COLLABORATION', 'LEADERSHIP'];
   
-  if (topActivities.length > 0) {
-    topActivities.forEach((activity, index) => {
-      body.appendParagraph(`${index + 1}. ${activity.title}`).setAttributes(CONFIG.STYLE.H2);
-      body.appendParagraph(`Category: ${activity.category} | Score: ${activity.relevanceScore}/100 | Type: ${activity.type}`);
-      if (activity.description && activity.description.length > 0) {
-        body.appendParagraph(`Description: ${activity.description.substring(0, 200)}${activity.description.length > 200 ? '...' : ''}`);
+  for (var i = 0; i < categories.length; i++) {
+    var category = categories[i];
+    var metric = performanceMetrics[category];
+    
+    if (metric.rating > 0) {
+      body.appendParagraph(category).setAttributes(CONFIG.STYLE.H2);
+      body.appendParagraph('Rating: ' + metric.rating.toFixed(1) + '/4.0 | Impact Score: ' + metric.impact.toFixed(0));
+      if (metric.description) {
+        body.appendParagraph('Key Contributions: ' + metric.description);
       }
       body.appendParagraph('');
-    });
-  } else {
-    body.appendParagraph('No high-scoring activities found. Consider reviewing the analysis period or expanding activity scope.');
+    }
+  }
+}
+
+function insertProjectContributions(body, projectSummaries) {
+  for (var i = 0; i < projectSummaries.length; i++) {
+    var project = projectSummaries[i];
+    body.appendParagraph(project.projectTitle).setAttributes(CONFIG.STYLE.H2);
+    body.appendParagraph('Impact Score: ' + project.totalImpact.toFixed(0));
+    body.appendParagraph(project.narrative);
+    if (project.businessOutcomes.length > 0) {
+      body.appendParagraph('Business Outcomes:').setAttributes(CONFIG.STYLE.H2);
+      for (var j = 0; j < project.businessOutcomes.length; j++) {
+        body.appendListItem(project.businessOutcomes[j]);
+      }
+    }
+    body.appendParagraph('');
   }
 }
 
@@ -1289,195 +1008,95 @@ function insertTopActivities(body, analysis) {
 // NOTIFICATION SYSTEM
 // ================================================================================
 
-/**
- * Sends completion notification email
- */
-function sendCompletionNotification(userEmail, fullName, reportUrl, metrics) {
+function sendCompletionNotification(userEmail, fullName, reportUrl) {
   try {
-    const subject = `✅ Your Work Summary Report is Ready - ${fullName}`;
-    const body = `
-<html>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h2 style="color: #00558C;">🎉 Your Work Summary Report is Ready!</h2>
-    <p>Hello ${fullName},</p>
-    <p>Your comprehensive work summary report has been generated successfully and is ready for review.</p>
-    
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${reportUrl}" 
-         style="background-color: #00558C; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-        📄 Open Your Report
-      </a>
-    </div>
-    
-    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <h3 style="margin-top: 0; color: #00558C;">Analysis Summary:</h3>
-      <ul style="margin-bottom: 0;">
-        <li><strong>Total Activities Analyzed:</strong> ${metrics.totalActivities}</li>
-        <li><strong>Average Impact Score:</strong> ${metrics.averageRelevance.toFixed(1)}/100</li>
-        <li><strong>High-Impact Activities:</strong> ${metrics.highImpactActivities}</li>
-        <li><strong>Strategic Focus Score:</strong> ${metrics.weightedStrategicFocus.toFixed(1)}%</li>
-      </ul>
-    </div>
-    
-    <p><strong>What's included in your report:</strong></p>
-    <ul>
-      <li>Executive recommendations for career development</li>
-      <li>Detailed analysis of your work across Innovation, Execution, Collaboration, and Leadership</li>
-      <li>Work pattern insights and productivity metrics</li>
-      <li>Top strategic activities with impact scores</li>
-    </ul>
-    
-    <p style="margin-top: 30px;">Best regards,<br>Work Summary Generator</p>
-    <hr style="margin-top: 30px; border: none; border-top: 1px solid #eee;">
-    <p style="font-size: 12px; color: #666;">This is an automated notification. The report link will remain active and accessible through your Google Drive.</p>
-  </div>
-</body>
-</html>
-    `;
+    var subject = 'Performance Summary Ready - ' + fullName;
+    var body = 'Hello ' + fullName + ',\n\n' +
+        'Your performance summary report is ready.\n\n' +
+        'View your report: ' + reportUrl + '\n\n' +
+        'Best regards,\n' +
+        'Performance Summary Generator';
 
-    GmailApp.sendEmail(userEmail, subject, '', {
-      htmlBody: body,
-      name: 'Work Summary Generator'
-    });
-    
-    console.log(`Completion notification sent to: ${userEmail}`);
+    GmailApp.sendEmail(userEmail, subject, body);
+    console.log('Notification sent to: ' + userEmail);
   } catch (error) {
-    console.error('Error sending completion notification:', error);
-    throw error;
+    console.error('Error sending notification:', error);
   }
 }
 
-/**
- * Sends error notification email
- */
 function sendErrorNotification(userEmail, fullName, errorMessage) {
   try {
-    const subject = `❌ Work Summary Report Generation Failed - ${fullName}`;
-    const body = `
-<html>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h2 style="color: #dc3545;">⚠️ Report Generation Failed</h2>
-    <p>Hello ${fullName},</p>
-    <p>Unfortunately, we encountered an issue while generating your work summary report.</p>
+    var subject = 'Performance Summary Failed - ' + fullName;
+    var body = 'Hello ' + fullName + ',\n\n' +
+        'Your performance summary generation failed.\n\n' +
+        'Error: ' + errorMessage + '\n\n' +
+        'Please try again with a smaller date range.\n\n' +
+        'Best regards,\n' +
+        'Performance Summary Generator';
     
-    <div style="background-color: #f8d7da; padding: 15px; border-radius: 5px; border-left: 4px solid #dc3545; margin: 20px 0;">
-      <strong>Error Details:</strong><br>
-      <code style="background-color: #fff; padding: 2px 4px; border-radius: 3px; font-family: monospace;">${errorMessage}</code>
-    </div>
-    
-    <h3 style="color: #dc3545;">What you can do:</h3>
-    <ol>
-      <li><strong>Reduce the date range:</strong> Large date ranges can cause timeouts. Try analyzing 1-2 weeks at a time.</li>
-      <li><strong>Check permissions:</strong> Ensure the add-on has access to Gmail and Google Drive.</li>
-      <li><strong>Try again later:</strong> The issue might be temporary due to Google's API limits.</li>
-      <li><strong>Contact support:</strong> If the problem persists, please reach out for assistance.</li>
-    </ol>
-    
-    <div style="background-color: #d1ecf1; padding: 15px; border-radius: 5px; border-left: 4px solid #bee5eb; margin: 20px 0;">
-      <strong>💡 Pro Tips:</strong>
-      <ul style="margin-bottom: 0;">
-        <li>Start with a 1-week analysis to test the system</li>
-        <li>Ensure you have sent emails and calendar events in the selected period</li>
-        <li>Check that your Gmail account has sufficient activity</li>
-      </ul>
-    </div>
-    
-    <p>We apologize for the inconvenience. Please don't hesitate to try again or contact us if you need assistance.</p>
-    
-    <p style="margin-top: 30px;">Best regards,<br>Work Summary Generator Support</p>
-    <hr style="margin-top: 30px; border: none; border-top: 1px solid #eee;">
-    <p style="font-size: 12px; color: #666;">This is an automated error notification.</p>
-  </div>
-</body>
-</html>
-    `;
-    
-    GmailApp.sendEmail(userEmail, subject, '', {
-      htmlBody: body,
-      name: 'Work Summary Generator'
-    });
-    
-    console.log(`Error notification sent to: ${userEmail}`);
+    GmailApp.sendEmail(userEmail, subject, body);
+    console.log('Error notification sent to: ' + userEmail);
   } catch (error) {
     console.error('Error sending error notification:', error);
   }
 }
 
 // ================================================================================
-// UTILITY AND TESTING FUNCTIONS
+// UTILITY FUNCTIONS
 // ================================================================================
 
-/**
- * Test function to validate permissions
- */
 function testPermissions() {
   try {
-    // Test Gmail access
-    const aliases = GmailApp.getAliases();
+    GmailApp.getAliases();
     console.log('Gmail access: OK');
     
-    // Test Calendar access
-    const calendar = CalendarApp.getDefaultCalendar();
+    CalendarApp.getDefaultCalendar();
     console.log('Calendar access: OK');
     
-    // Test Drive access
-    const testDoc = DocumentApp.create('Permission Test - DELETE ME');
-    const url = testDoc.getUrl();
+    var testDoc = DocumentApp.create('Test Doc');
     DriveApp.getFileById(testDoc.getId()).setTrashed(true);
     console.log('Drive access: OK');
     
-    // Test Properties access
     PropertiesService.getUserProperties().setProperty('test', 'OK');
-    const testValue = PropertiesService.getUserProperties().getProperty('test');
     PropertiesService.getUserProperties().deleteProperty('test');
     console.log('Properties access: OK');
     
     return 'All permissions validated successfully!';
   } catch (error) {
     console.error('Permission test failed:', error);
-    throw new Error(`Permission test failed: ${error.toString()}`);
+    throw new Error('Permission test failed: ' + error.toString());
   }
 }
 
-/**
- * Cleanup function to remove old jobs and triggers
- */
-function cleanupOldJobs(daysOld = 7) {
-  const properties = PropertiesService.getUserProperties();
-  const jobIdsString = properties.getProperty('activeJobIds');
+function cleanupOldJobs(daysOld) {
+  if (!daysOld) daysOld = 7;
+  
+  var properties = PropertiesService.getUserProperties();
+  var jobIdsString = properties.getProperty('activeJobIds');
   
   if (!jobIdsString) return;
   
-  const jobIds = JSON.parse(jobIdsString);
-  const cutoffDate = new Date(Date.now() - (daysOld * 24 * 60 * 60 * 1000));
-  const activeJobs = [];
+  var jobIds = JSON.parse(jobIdsString);
+  var cutoffDate = new Date(Date.now() - (daysOld * 24 * 60 * 60 * 1000));
+  var activeJobs = [];
   
-  jobIds.forEach(jobId => {
-    const jobDataString = properties.getProperty(jobId);
+  for (var i = 0; i < jobIds.length; i++) {
+    var jobId = jobIds[i];
+    var jobDataString = properties.getProperty(jobId);
     if (jobDataString) {
-      const jobData = JSON.parse(jobDataString);
-      const jobDate = new Date(jobData.startTime);
+      var jobData = JSON.parse(jobDataString);
+      var jobDate = new Date(jobData.startTime);
       
       if (jobDate > cutoffDate) {
         activeJobs.push(jobId);
       } else {
-        // Remove old job
         properties.deleteProperty(jobId);
-        console.log(`Cleaned up old job: ${jobId}`);
+        console.log('Cleaned up old job: ' + jobId);
       }
     }
-  });
+  }
   
   properties.setProperty('activeJobIds', JSON.stringify(activeJobs));
-  console.log(`Cleanup complete. ${activeJobs.length} jobs remaining.`);
+  console.log('Cleanup complete. ' + activeJobs.length + ' jobs remaining.');
 }
 
-/**
- * Manual trigger to process a specific job (for debugging)
- */
-function processSpecificJob(jobId) {
-  PropertiesService.getScriptProperties().setProperty('currentJobId', jobId);
-  processJob();
-}
