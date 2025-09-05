@@ -731,14 +731,14 @@ function analyzeProjectContributions(projects, userInputs) {
 }
 
 function calculatePerformanceMetrics(projectSummaries) {
-  var metrics = {
-    INNOVATION: { rating: 2.5, impact: 50, description: 'Demonstrated innovative thinking' },
-    EXECUTION: { rating: 3.0, impact: 60, description: 'Strong execution capabilities' },
-    COLLABORATION: { rating: 2.8, impact: 55, description: 'Effective collaboration' },
-    LEADERSHIP: { rating: 2.5, impact: 50, description: 'Growing leadership impact' }
-  };
-  
-  return metrics;
+    // Increase ratings by 20 percentage points (multiply by 1.2, max 4.0)
+    var metrics = {
+      INNOVATION: { rating: Math.min(2.5 * 1.2, 4.0), impact: 50, description: 'Demonstrated innovative thinking' },
+      EXECUTION: { rating: Math.min(3.0 * 1.2, 4.0), impact: 60, description: 'Strong execution capabilities' },
+      COLLABORATION: { rating: Math.min(2.8 * 1.2, 4.0), impact: 55, description: 'Effective collaboration' },
+      LEADERSHIP: { rating: Math.min(2.5 * 1.2, 4.0), impact: 50, description: 'Growing leadership impact' }
+    };
+    return metrics;
 }
 
 function generateExecutiveSummary(projectSummaries) {
