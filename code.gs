@@ -582,44 +582,35 @@ function calculateActivityScore(text) {
   var contributionType = 'Contributed';
   var businessOutcomes = [];
 
-  // Fuzzy/stem/exact/pattern matching
-  function matchKeywords(keywordObj) {
+  // Improved fuzzy/stem/exact/pattern matching and multi-labeling
+  function matchKeywords(keywordObj, category) {
     var matched = false;
     keywordObj.stems.forEach(function(stem) {
       if (text.match(new RegExp(stem, 'i'))) {
         score += CONFIG.SCORING.STEM_MATCH_VALUE;
         matched = true;
+        if (labels.indexOf(category) === -1) labels.push(category);
       }
     });
     keywordObj.exact.forEach(function(exact) {
-      if (text.indexOf(exact) >= 0) {
+      if (text.match(new RegExp('\\b' + exact + '\\b', 'i'))) {
         score += CONFIG.SCORING.EXACT_MATCH_VALUE;
         matched = true;
+        if (labels.indexOf(category) === -1) labels.push(category);
       }
     });
     keywordObj.patterns && keywordObj.patterns.forEach(function(pattern) {
-      if (text.indexOf(pattern) >= 0) {
+      if (text.toLowerCase().indexOf(pattern.toLowerCase()) >= 0) {
         score += CONFIG.SCORING.PATTERN_MATCH_VALUE;
         matched = true;
+        if (labels.indexOf(category) === -1) labels.push(category);
       }
     });
     return matched;
   }
 
-  // Multi-labeling (robust fuzzy logic)
   Object.keys(CONFIG.KEYWORDS).forEach(function(category) {
-    var found = false;
-    var kw = CONFIG.KEYWORDS[category];
-    kw.stems.forEach(function(stem) {
-      if (text.match(new RegExp(stem, 'i'))) found = true;
-    });
-    kw.exact.forEach(function(exact) {
-      if (text.match(new RegExp('\\b' + exact + '\\b', 'i'))) found = true;
-    });
-    kw.patterns && kw.patterns.forEach(function(pattern) {
-      if (text.toLowerCase().indexOf(pattern.toLowerCase()) >= 0) found = true;
-    });
-    if (found) labels.push(category);
+    matchKeywords(CONFIG.KEYWORDS[category], category);
   });
 
   // Leadership detection and weighting
@@ -669,6 +660,7 @@ function calculateActivityScore(text) {
 function groupActivitiesIntoProjects(activities) {
   // Improved clustering: group by most common phrase/topic in activities
   var clusters = {};
+  var titleMap = {};
   for (var i = 0; i < activities.length; i++) {
     var activity = activities[i];
     var combinedText = (activity.title + ' ' + activity.description).toLowerCase();
@@ -677,35 +669,37 @@ function groupActivitiesIntoProjects(activities) {
     activity.labels = scoreObj.labels;
     activity.contributionType = scoreObj.contributionType;
     activity.businessOutcomes = scoreObj.businessOutcomes;
-    // Use title or first 3 words of title as cluster key
-    var key = activity.title ? activity.title.split(' ').slice(0,3).join(' ') : 'Other';
+    // Use most frequent label as cluster key
+    var key = scoreObj.labels.length > 0 ? scoreObj.labels.join('-') : 'Other';
     if (!clusters[key]) clusters[key] = [];
     clusters[key].push(activity);
+    // Track most common title
+    var t = activity.title || 'Untitled';
+    titleMap[key] = titleMap[key] || {};
+    titleMap[key][t] = (titleMap[key][t]||0)+1;
   }
   // Create projects from clusters
   var projects = [];
   Object.keys(clusters).forEach(function(key) {
     var cluster = clusters[key];
     var totalImpact = cluster.reduce(function(sum, act) { return sum + act.impactScore; }, 0);
-    // Normalize totalImpact to 0-100 scale
-    var normImpact = Math.min(Math.round(totalImpact / cluster.length), 100);
+    // Normalize totalImpact to 1-100 scale
+    var normImpact = Math.max(1, Math.min(Math.round(totalImpact / cluster.length), 100));
     var timeframe = {
       start: cluster[0].date,
       end: cluster[cluster.length-1].date
     };
-    // Use most frequent label for project category
-    var labelCounts = {};
-    cluster.forEach(function(act) {
-      act.labels.forEach(function(lab) {
-        labelCounts[lab] = (labelCounts[lab]||0)+1;
-      });
-    });
-    var topLabel = Object.keys(labelCounts).sort(function(a,b){return labelCounts[b]-labelCounts[a];})[0] || 'Other';
+    // Use most frequent title for project name
+    var titleCounts = titleMap[key];
+    var topTitle = Object.keys(titleCounts).sort(function(a,b){return titleCounts[b]-titleCounts[a];})[0] || 'Untitled';
+    // Use all labels for multi-labeling
+    var allLabels = [];
+    cluster.forEach(function(act){act.labels.forEach(function(lab){if(allLabels.indexOf(lab)===-1)allLabels.push(lab);});});
     projects.push({
-      title: cleanTitle(key),
+      title: cleanTitle(topTitle),
       activities: cluster,
       totalImpact: normImpact,
-      labels: [topLabel],
+      labels: allLabels,
       timeframe: timeframe
     });
   });
@@ -738,13 +732,21 @@ function analyzeProjectContributions(projects, userInputs) {
       outcomeDescriptions.push('Market Impact: Enhanced market position or share');
       outcomeNarrative += 'Strategic actions taken improved our market position and competitive standing. ';
     }
-    // Executive narrative
-    var narrative = userInputs.fullName + ' ' + contributionType + ' ' + project.title +
-      ' (' + project.activities.length + ' months | Impact Score: ' + project.totalImpact.toFixed(0) + ')\nRole: ' + contributionType +
-      ' | Collaboration: ' + (project.activities.length > 5 ? 'Large group collaboration (8+ people)' : 'Small team') + '\n';
-    narrative += userInputs.fullName + ' ' + contributionType.toLowerCase() + ' the initiative, providing team coverage and support, demonstrating strategic organizational perspective. ';
+    // Executive narrative - more substantive, connects to outcomes and org goals
+    var narrative = userInputs.fullName + ' ' + contributionType + ' the project "' + project.title + '" (' + project.activities.length + ' activities | Impact Score: ' + project.totalImpact.toFixed(0) + ').\n';
+    narrative += 'Role: ' + contributionType + ' | Collaboration: ' + (project.activities.length > 5 ? 'Large group collaboration (8+ people)' : 'Small team') + '.\n';
+    narrative += 'Key achievements include: ';
+    if (outcomeDescriptions.length > 0) {
+      narrative += outcomeDescriptions.join('; ') + '. ';
+    }
     narrative += outcomeNarrative;
-    narrative += 'This work is a strong example of achievement-focused execution, directly supporting key organizational goals.';
+    narrative += 'This project advanced organizational goals such as revenue growth, customer satisfaction, efficiency, and market position. '; 
+    narrative += 'Specific activities included: ';
+    for (var a = 0; a < project.activities.length; a++) {
+      var act = project.activities[a];
+      narrative += '\n- ' + act.title + ': ' + (act.description ? act.description.substring(0,80) : '') + '...';
+    }
+    narrative += '\nOverall, this work is a strong example of achievement-focused execution, directly supporting key business outcomes.';
     var summary = {
       projectTitle: project.title,
       totalImpact: project.totalImpact,
