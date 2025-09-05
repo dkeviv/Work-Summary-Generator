@@ -606,11 +606,20 @@ function calculateActivityScore(text) {
     return matched;
   }
 
-  // Multi-labeling
+  // Multi-labeling (robust fuzzy logic)
   Object.keys(CONFIG.KEYWORDS).forEach(function(category) {
-    if (matchKeywords(CONFIG.KEYWORDS[category])) {
-      labels.push(category);
-    }
+    var found = false;
+    var kw = CONFIG.KEYWORDS[category];
+    kw.stems.forEach(function(stem) {
+      if (text.match(new RegExp(stem, 'i'))) found = true;
+    });
+    kw.exact.forEach(function(exact) {
+      if (text.match(new RegExp('\\b' + exact + '\\b', 'i'))) found = true;
+    });
+    kw.patterns && kw.patterns.forEach(function(pattern) {
+      if (text.toLowerCase().indexOf(pattern.toLowerCase()) >= 0) found = true;
+    });
+    if (found) labels.push(category);
   });
 
   // Leadership detection and weighting
@@ -658,7 +667,7 @@ function calculateActivityScore(text) {
 }
 
 function groupActivitiesIntoProjects(activities) {
-  // Cluster activities by similar keywords/topics
+  // Improved clustering: group by most common phrase/topic in activities
   var clusters = {};
   for (var i = 0; i < activities.length; i++) {
     var activity = activities[i];
@@ -668,8 +677,8 @@ function groupActivitiesIntoProjects(activities) {
     activity.labels = scoreObj.labels;
     activity.contributionType = scoreObj.contributionType;
     activity.businessOutcomes = scoreObj.businessOutcomes;
-    // Use first label as cluster key
-    var key = activity.labels.length > 0 ? activity.labels[0] : 'Other';
+    // Use title or first 3 words of title as cluster key
+    var key = activity.title ? activity.title.split(' ').slice(0,3).join(' ') : 'Other';
     if (!clusters[key]) clusters[key] = [];
     clusters[key].push(activity);
   }
@@ -678,14 +687,25 @@ function groupActivitiesIntoProjects(activities) {
   Object.keys(clusters).forEach(function(key) {
     var cluster = clusters[key];
     var totalImpact = cluster.reduce(function(sum, act) { return sum + act.impactScore; }, 0);
+    // Normalize totalImpact to 0-100 scale
+    var normImpact = Math.min(Math.round(totalImpact / cluster.length), 100);
     var timeframe = {
       start: cluster[0].date,
       end: cluster[cluster.length-1].date
     };
+    // Use most frequent label for project category
+    var labelCounts = {};
+    cluster.forEach(function(act) {
+      act.labels.forEach(function(lab) {
+        labelCounts[lab] = (labelCounts[lab]||0)+1;
+      });
+    });
+    var topLabel = Object.keys(labelCounts).sort(function(a,b){return labelCounts[b]-labelCounts[a];})[0] || 'Other';
     projects.push({
-      title: cleanTitle(key + ' Project'),
+      title: cleanTitle(key),
       activities: cluster,
-      totalImpact: totalImpact,
+      totalImpact: normImpact,
+      labels: [topLabel],
       timeframe: timeframe
     });
   });
@@ -701,23 +721,30 @@ function analyzeProjectContributions(projects, userInputs) {
     var contributionType = mainActivity.contributionType;
     var businessOutcomes = mainActivity.businessOutcomes;
     var outcomeDescriptions = [];
+    var outcomeNarrative = '';
     if (businessOutcomes.indexOf('customer_satisfaction') >= 0) {
       outcomeDescriptions.push('Customer Impact: Improved experience or satisfaction');
+      outcomeNarrative += 'This project delivered measurable improvements in customer experience and satisfaction, aligning with our commitment to customer-centricity. ';
     }
     if (businessOutcomes.indexOf('revenue') >= 0) {
       outcomeDescriptions.push('Business Impact: Revenue growth or margin improvement');
+      outcomeNarrative += 'The initiative contributed directly to revenue growth and margin improvement, supporting organizational financial goals. ';
     }
     if (businessOutcomes.indexOf('efficiency') >= 0) {
       outcomeDescriptions.push('Efficiency: Process optimization or automation');
+      outcomeNarrative += 'Efforts in this project led to process optimization and automation, driving operational efficiency and cost savings. ';
     }
     if (businessOutcomes.indexOf('market_position') >= 0) {
       outcomeDescriptions.push('Market Impact: Enhanced market position or share');
+      outcomeNarrative += 'Strategic actions taken improved our market position and competitive standing. ';
     }
     // Executive narrative
     var narrative = userInputs.fullName + ' ' + contributionType + ' ' + project.title +
       ' (' + project.activities.length + ' months | Impact Score: ' + project.totalImpact.toFixed(0) + ')\nRole: ' + contributionType +
       ' | Collaboration: ' + (project.activities.length > 5 ? 'Large group collaboration (8+ people)' : 'Small team') + '\n';
-    narrative += userInputs.fullName + ' ' + contributionType.toLowerCase() + ' the initiative, providing team coverage and support, demonstrating strategic organizational perspective, resulting in meaningful business outcomes.';
+    narrative += userInputs.fullName + ' ' + contributionType.toLowerCase() + ' the initiative, providing team coverage and support, demonstrating strategic organizational perspective. ';
+    narrative += outcomeNarrative;
+    narrative += 'This work is a strong example of achievement-focused execution, directly supporting key organizational goals.';
     var summary = {
       projectTitle: project.title,
       totalImpact: project.totalImpact,
@@ -754,15 +781,15 @@ function calculatePerformanceMetrics(projectSummaries) {
         }
       }
 
-      // If no impact, set maxImpact to 100 to avoid division by zero
-      if (maxImpact === 0) maxImpact = 100;
+      // If no impact, set maxImpact to 1 to avoid division by zero
+      if (maxImpact === 0) maxImpact = 1;
 
       // Calculate ratings for each category
       categories.forEach(function(category) {
         var avgImpact = categoryCounts[category] > 0 ? categoryImpact[category] / categoryCounts[category] : 0;
-        // Normalize to 1.0–4.0 scale
-        var rating = 1.0 + (avgImpact / maxImpact) * 3.0;
-        rating = Math.min(rating, 4.0);
+        // Normalize to 1.0–4.0 scale, ensure spread
+        var rating = 1.0 + (avgImpact / 100) * 3.0;
+        rating = Math.min(Math.max(rating, 1.0), 4.0);
         metrics[category] = {
           rating: rating,
           impact: categoryImpact[category],
