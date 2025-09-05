@@ -1131,3 +1131,13 @@ function cleanupOldJobs(daysOld) {
   console.log('Cleanup complete. ' + activeJobs.length + ' jobs remaining.');
 }
 
+function cleanTitle(title) {
+  if (!title) return 'Untitled Project';
+  title = title.replace(/^(re:|fwd:|fw:)/gi, '');
+  title = title.replace(/^[\s-]*/, '');
+  if (title.length > 0) {
+    title = title.charAt(0).toUpperCase() + title.slice(1);
+  }
+  return title.substring(0, 60);
+}
+
