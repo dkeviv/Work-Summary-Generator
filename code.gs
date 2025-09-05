@@ -732,13 +732,44 @@ function analyzeProjectContributions(projects, userInputs) {
 
 function calculatePerformanceMetrics(projectSummaries) {
     // Increase ratings by 20 percentage points (multiply by 1.2, max 4.0)
-    var metrics = {
-      INNOVATION: { rating: Math.min(2.5 * 1.2, 4.0), impact: 50, description: 'Demonstrated innovative thinking' },
-      EXECUTION: { rating: Math.min(3.0 * 1.2, 4.0), impact: 60, description: 'Strong execution capabilities' },
-      COLLABORATION: { rating: Math.min(2.8 * 1.2, 4.0), impact: 55, description: 'Effective collaboration' },
-      LEADERSHIP: { rating: Math.min(2.5 * 1.2, 4.0), impact: 50, description: 'Growing leadership impact' }
-    };
-    return metrics;
+      // Dynamic rating calculation based on projectSummaries
+      var categories = ['INNOVATION', 'EXECUTION', 'COLLABORATION', 'LEADERSHIP'];
+      var metrics = {};
+      var maxImpact = 0;
+      var categoryImpact = { INNOVATION: 0, EXECUTION: 0, COLLABORATION: 0, LEADERSHIP: 0 };
+      var categoryCounts = { INNOVATION: 0, EXECUTION: 0, COLLABORATION: 0, LEADERSHIP: 0 };
+
+      // Aggregate impact scores by category
+      for (var i = 0; i < projectSummaries.length; i++) {
+        var project = projectSummaries[i];
+        var labels = project.labels || [];
+        var impact = project.totalImpact || 0;
+        maxImpact = Math.max(maxImpact, impact);
+        for (var j = 0; j < labels.length; j++) {
+          var label = labels[j];
+          if (categoryImpact[label] !== undefined) {
+            categoryImpact[label] += impact;
+            categoryCounts[label] += 1;
+          }
+        }
+      }
+
+      // If no impact, set maxImpact to 100 to avoid division by zero
+      if (maxImpact === 0) maxImpact = 100;
+
+      // Calculate ratings for each category
+      categories.forEach(function(category) {
+        var avgImpact = categoryCounts[category] > 0 ? categoryImpact[category] / categoryCounts[category] : 0;
+        // Normalize to 1.0–4.0 scale
+        var rating = 1.0 + (avgImpact / maxImpact) * 3.0;
+        rating = Math.min(rating, 4.0);
+        metrics[category] = {
+          rating: rating,
+          impact: categoryImpact[category],
+          description: categoryCounts[category] > 0 ? 'Significant contributions in ' + category.toLowerCase() : 'Limited activity in ' + category.toLowerCase()
+        };
+      });
+      return metrics;
 }
 
 function generateExecutiveSummary(projectSummaries) {

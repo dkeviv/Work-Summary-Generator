@@ -112,6 +112,32 @@ Individual Contributor: 1.0x
 projectImpact = sum(activityScores) × leadershipWeight × outcomeMultiplier
 ```
 
+## Impact Score and Ratings Logic
+
+### Impact Score Calculation
+- Each activity is analyzed for category keywords using fuzzy, stem, exact, and pattern matching.
+- Leadership traits (e.g., team coverage, mentoring, strategic thinking) are detected and apply a multiplier (up to 2.5x).
+- Outcome keywords (revenue, customer, efficiency, market) apply additional multipliers (e.g., 2.5x for revenue).
+- Contribution type (Led, Drove, Collaborated, Contributed) adds bonus points.
+- The final impact score for an activity is:
+  
+  `impactScore = (base score + keyword matches + contribution bonus) * leadership multiplier * outcome multiplier`
+  
+- The score is capped at a maximum value (e.g., 100).
+
+### Ratings Calculation
+- For each performance category (INNOVATION, EXECUTION, COLLABORATION, LEADERSHIP):
+  - Aggregate the total impact scores of all activities labeled with that category.
+  - Calculate the average impact for each category.
+  - Normalize the average impact to a 1.0–4.0 scale:
+    
+    `rating = 1.0 + (average impact / max impact across all categories) * 3.0`
+    
+  - Cap the rating at 4.0.
+- Ratings are dynamic and reflect actual contributions and business impact.
+
+This ensures both impact scores and ratings are data-driven and tailored to the user's real achievements.
+
 ## User Interface Flow
 
 ### 1. Homepage Card
